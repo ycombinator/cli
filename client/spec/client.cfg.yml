@@ -1,0 +1,4 @@
+package: spec
+output: client.gen.go
+generate: [client, types]
+exclude-schemas: [Column, Schema, Table]

@@ -1,0 +1,12 @@
+xata
+main
+cli
+
+# Test binary, built with `go test -c`
+*.test
+
+# Dist packages
+dist/
+
+# Local environment settings
+.envrc

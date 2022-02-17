@@ -1,0 +1,2734 @@
+openapi: 3.0.0
+info:
+  title: xata
+  description: xata.io API
+  version: '1.0'
+  license:
+    name: Xata
+  contact:
+    name: TODO
+servers:
+  - url: /
+    description: ''
+paths:
+  /user:
+    summary: User info
+    description: This endpoint allows retrieving or updating a given user by their user ID.
+    get:
+      operationId: getUser
+      summary: Get user details
+      description: Return details of the user making the request
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserWithID'
+        '400':
+          $ref: '#/components/responses/SimpleError'
+        '404':
+          $ref: '#/components/responses/SimpleError'
+      tags:
+        - Users
+    put:
+      operationId: updateUser
+      summary: Update user info
+      description: Update user info
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserWithID'
+        '400':
+          $ref: '#/components/responses/SimpleError'
+        '404':
+          $ref: '#/components/responses/SimpleError'
+      tags:
+        - Users
+    delete:
+      operationId: deleteUser
+      summary: Delete user
+      description: Delete the user making the request
+      responses:
+        '204':
+          description: No Content
+        '400':
+          $ref: '#/components/responses/SimpleError'
+        '404':
+          $ref: '#/components/responses/SimpleError'
+      tags:
+        - Users
+  /user/keys:
+    summary: User API Keys
+    description: This endpoint allows interacting with the API keys for a given user.
+    get:
+      operationId: getUserAPIKeys
+      summary: Get the list of user API keys
+      description: Retrieve a list of existing user API keys
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  keys:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        createdAt:
+                          $ref: '#/components/schemas/DateTime'
+                      required:
+                        - name
+                        - createdAt
+                required:
+                  - keys
+        '400':
+          $ref: '#/components/responses/SimpleError'
+        '404':
+          $ref: '#/components/responses/SimpleError'
+      tags:
+        - Users
+  '/user/keys/{key_name}':
+    summary: Single User API Key
+    description: This endpoint allows operations on a single API key for a given user.
+    parameters:
+      - $ref: '#/components/parameters/APIKeyNameParam'
+    post:
+      operationId: createUserAPIKey
+      summary: Create and return new API key
+      description: Create and return new API key
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  key:
+                    type: string
+                  createdAt:
+                    $ref: '#/components/schemas/DateTime'
+                required:
+                  - name
+                  - key
+                  - createdAt
+        '400':
+          $ref: '#/components/responses/SimpleError'
+        '404':
+          $ref: '#/components/responses/SimpleError'
+      tags:
+        - Users
+    delete:
+      operationId: deleteUserAPIKey
+      summary: Delete an existing API key
+      description: Delete an existing API key
+      responses:
+        '204':
+          description: No Content
+        '400':
+          $ref: '#/components/responses/SimpleError'
+        '404':
+          $ref: '#/components/responses/SimpleError'
+      tags:
+        - Users
+  /workspaces:
+    summary: Workspaces
+    description: 'This endpoint enables interacting with specific workspaces within Xata. For more information about workspaces, see the [docs](/concepts/workspaces).'
+    post:
+      operationId: createWorkspace
+      summary: Create a new workspace
+      description: Creates a new workspace with the user requesting it as its single owner.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkspaceMeta'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workspace'
+        '400':
+          $ref: '#/components/responses/SimpleError'
+        '404':
+          $ref: '#/components/responses/SimpleError'
+      tags:
+        - Workspaces
+    get:
+      operationId: getWorkspacesList
+      summary: Get workspaces
+      description: Retrieve the list of workspaces the user belongs to
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  workspaces:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          $ref: '#/components/schemas/WorkspaceID'
+                        name:
+                          type: string
+                        slug:
+                          type: string
+                        role:
+                          $ref: '#/components/schemas/Role'
+                      required:
+                        - name
+                        - role
+                        - slug
+                        - id
+                required:
+                  - workspaces
+        '400':
+          $ref: '#/components/responses/SimpleError'
+        '404':
+          $ref: '#/components/responses/SimpleError'
+      tags:
+        - Workspaces
+  '/workspaces/{workspace_id}':
+    summary: Workspace by ID
+    description: 'This endpoint contains operations for a specific workspace, referenced by ID.'
+    parameters:
+      - $ref: '#/components/parameters/WorkspaceIDParam'
+    get:
+      operationId: getWorkspace
+      summary: Get an existing workspace
+      description: Retrieve workspace info from a workspace ID
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workspace'
+        '400':
+          $ref: '#/components/responses/SimpleError'
+        '404':
+          $ref: '#/components/responses/SimpleError'
+      tags:
+        - Workspaces
+    put:
+      operationId: updateWorkspace
+      summary: Update an existing workspace
+      description: Update workspace info
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkspaceMeta'
+      responses:
+        '200':
+          description: OK
+        '400':
+          $ref: '#/components/responses/SimpleError'
+        '404':
+          $ref: '#/components/responses/SimpleError'
+      tags:
+        - Workspaces
+    delete:
+      operationId: deleteWorkspace
+      summary: Delete an existing workspace
+      description: Delete the workspace with the provided ID
+      responses:
+        '204':
+          description: No Content
+        '400':
+          $ref: '#/components/responses/SimpleError'
+        '404':
+          $ref: '#/components/responses/SimpleError'
+      tags:
+        - Workspaces
+  '/workspaces/{workspace_id}/members':
+    summary: Workspace Members
+    description: This endpoint allows operations concerning the members of a given workspace.
+    parameters:
+      - $ref: '#/components/parameters/WorkspaceIDParam'
+    get:
+      operationId: getWorkspaceMembersList
+      summary: Get the list members of a workspace
+      description: Retrieve the list of members of the given workspace
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkspaceMembers'
+        '400':
+          $ref: '#/components/responses/SimpleError'
+        '404':
+          $ref: '#/components/responses/SimpleError'
+      tags:
+        - Workspaces
+  '/workspaces/{workspace_id}/members/{user_id}':
+    summary: Specific Workspace Member
+    description: 'This endpoint enables operations on a specific member of a workspace, referenced by their user ID.'
+    parameters:
+      - $ref: '#/components/parameters/WorkspaceIDParam'
+      - $ref: '#/components/parameters/UserIDParam'
+    put:
+      operationId: updateWorkspaceMemberRole
+      summary: Update workspace member role
+      description: |
+        Update a workspace member role. Workespaces must always have at least one owner, so this operation will fail if trying to remove owner role from the last owner in the workpsace.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role:
+                  $ref: '#/components/schemas/Role'
+              required:
+                - role
+      responses:
+        '204':
+          description: No Content
+        '400':
+          $ref: '#/components/responses/SimpleError'
+        '404':
+          $ref: '#/components/responses/SimpleError'
+      tags:
+        - Workspaces
+    delete:
+      operationId: removeWorkspaceMember
+      summary: Remove a member from the workspace
+      description: Remove the member from the workspace
+      responses:
+        '204':
+          description: No Content
+        '400':
+          $ref: '#/components/responses/SimpleError'
+        '404':
+          $ref: '#/components/responses/SimpleError'
+      tags:
+        - Workspaces
+  '/workspaces/{workspace_id}/invites':
+    summary: Workspace Invites
+    description: This endpoint enables working with invites for a given workspace.
+    parameters:
+      - $ref: '#/components/parameters/WorkspaceIDParam'
+    post:
+      operationId: inviteWorkspaceMember
+      summary: Invite a user to join the workespace
+      description: Invite some user to join the workespace with the given role
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                role:
+                  $ref: '#/components/schemas/Role'
+              required:
+                - email
+                - role
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkspaceInvite'
+        '400':
+          $ref: '#/components/responses/SimpleError'
+        '404':
+          $ref: '#/components/responses/SimpleError'
+      tags:
+        - Workspaces
+  '/workspaces/{workspace_id}/invites/{invite_key}/accept':
+    summary: Accept an Invite
+    description: 'This [RPC](https://en.wikipedia.org/wiki/Remote_procedure_call)-style endpoint accepts a given invite to join a workspace.'
+    parameters:
+      - $ref: '#/components/parameters/WorkspaceIDParam'
+      - $ref: '#/components/parameters/InviteKeyParam'
+    post:
+      operationId: acceptWorkspaceMemberInvite
+      summary: Accept the invitation to join a workspace
+      description: |
+        Accept the invitation to join a workspace. If the operation succeeds the user will be a member of the workspace
+      responses:
+        '204':
+          description: OK
+        '400':
+          $ref: '#/components/responses/SimpleError'
+        '404':
+          $ref: '#/components/responses/SimpleError'
+      tags:
+        - Workspaces
+  /dbs:
+    summary: Databases
+    description: This path contains operations that can be performed on databases within Xata.
+    get:
+      operationId: getDatabaseList
+      summary: List databases
+      description: List all databases available in your Workspace.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListDatabasesResponse'
+      tags:
+        - Database
+  '/dbs/{db_name}':
+    summary: Single Database
+    description: 'Given a parameter `db_name`, this path allows interacting with a specific database on Xata. Below are a number of operations that can be performed on a given database.'
+    parameters:
+      - $ref: '#/components/parameters/DBNameParam'
+    get:
+      operationId: getBranchList
+      summary: List branches
+      description: List all available Branches
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListBranchesResponse'
+        '400':
+          $ref: '#/components/responses/SimpleError'
+        '404':
+          $ref: '#/components/responses/SimpleError'
+      tags:
+        - Branch
+    put:
+      operationId: createDatabase
+      summary: Create Database
+      description: Create Database with identifier name
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              description: ''
+              type: object
+              properties:
+                displayName:
+                  type: string
+                  minLength: 1
+                branchName:
+                  type: string
+                  minLength: 1
+                ui:
+                  type: object
+                  properties:
+                    color:
+                      type: string
+                metadata:
+                  $ref: '#/components/schemas/BranchMetadata'
+              example:
+                example-1:
+                  displayName: New database
+                  branchName: main
+                  metadata:
+                    repository: github.com/my/repository
+                    branch: github repository
+                    stage: testing
+                    labels:
+                      - development
+      responses:
+        '201':
+          description: Created
+          headers:
+            Location:
+              schema:
+                type: string
+                format: uri
+              description: 'URI to newly created resource: /{db_name}'
+          content:
+            application/json:
+              schema:
+                description: ''
+                type: object
+                properties:
+                  databaseName:
+                    type: string
+                    minLength: 1
+                  branchName:
+                    type: string
+                example:
+                  status: 200
+                  databaseName: New Database
+                required:
+                  - databaseName
+        '400':
+          description: Bad Request
+      tags:
+        - Database
+    delete:
+      operationId: deleteDatabase
+      summary: Delete Database
+      description: Delete a database and all of its branches and tables permanently.
+      responses:
+        '204':
+          description: No Content
+        '400':
+          $ref: '#/components/responses/SimpleError'
+        '404':
+          $ref: '#/components/responses/SimpleError'
+      tags:
+        - Database
+  '/db/{db_branch_name}':
+    summary: Database Branch by Name
+    description: 'This path allows interacting with a given database branch, referenced by parameter `db_branch_name`, which is expected in the format `database_name:branch_name`.'
+    parameters:
+      - $ref: '#/components/parameters/DBBranchNameParam'
+    get:
+      operationId: getBranchDetails
+      summary: Get branch schema and metadata
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  branch:
+                    $ref: '#/components/schemas/DBBranch'
+        '400':
+          $ref: '#/components/responses/SimpleError'
+        '404':
+          $ref: '#/components/responses/SimpleError'
+      tags:
+        - Branch
+    put:
+      operationId: createBranch
+      summary: Create Database branch
+      parameters:
+        - name: from
+          in: query
+          description: Name of source branch to branch the new schema from
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                from:
+                  description: Select the branch to fork from. Defaults to 'main'
+                  type: string
+                metadata:
+                  $ref: '#/components/schemas/BranchMetadata'
+      responses:
+        '204':
+          description: No Content
+        '400':
+          $ref: '#/components/responses/SimpleError'
+        '404':
+          $ref: '#/components/responses/SimpleError'
+      tags:
+        - Branch
+    delete:
+      operationId: deleteBranch
+      summary: Delete Database branch
+      description: Delete the branch in the database and all its resources
+      responses:
+        '204':
+          description: No Content
+        '400':
+          $ref: '#/components/responses/SimpleError'
+        '404':
+          $ref: '#/components/responses/SimpleError'
+      tags:
+        - Branch
+  '/db/{db_branch_name}/metadata':
+    summary: Branch Metadata
+    description: This path allows interacting with the metadata of a specific database branch.
+    parameters:
+      - $ref: '#/components/parameters/DBBranchNameParam'
+    put:
+      operationId: updateBranchMetadata
+      summary: Update branch metadata
+      description: Update the branch metadata
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BranchMetadata'
+      responses:
+        '204':
+          description: No Content
+        '400':
+          $ref: '#/components/responses/SimpleError'
+        '404':
+          $ref: '#/components/responses/SimpleError'
+      tags:
+        - Branch
+    get:
+      operationId: getBranchMetadata
+      summary: Get Branch Metadata
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BranchMetadata'
+        '400':
+          $ref: '#/components/responses/SimpleError'
+        '404':
+          $ref: '#/components/responses/SimpleError'
+      tags:
+        - Branch
+  '/db/{db_branch_name}/migrations':
+    summary: Branch Migrations
+    description: This path allows access to migrations on a given database branch.
+    parameters:
+      - $ref: '#/components/parameters/DBBranchNameParam'
+    get:
+      operationId: getBranchMigrationHistory
+      summary: Get branch migration history
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                limit:
+                  type: integer
+                startFrom:
+                  type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  startedFrom:
+                    $ref: '#/components/schemas/StartedFromMetadata'
+                  migrations:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/BranchMigration'
+        '400':
+          $ref: '#/components/responses/SimpleError'
+        '404':
+          $ref: '#/components/responses/SimpleError'
+      tags:
+        - Branch
+  '/db/{db_branch_name}/migrations/execute':
+    summary: Migration Execution
+    description: This endpoint is called in the style of an RPC (Remote Procedure Call) when a migration is to be executed against a specific database.
+    parameters:
+      - $ref: '#/components/parameters/DBBranchNameParam'
+    post:
+      operationId: executeBranchMigrationPlan
+      summary: Migrate branch
+      description: Apply a migration plan to the branch
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                version:
+                  type: integer
+                migration:
+                  $ref: '#/components/schemas/BranchMigration'
+              required:
+                - version
+                - migration
+      responses:
+        '200':
+          description: OK
+        '400':
+          $ref: '#/components/responses/SimpleError'
+        '404':
+          $ref: '#/components/responses/SimpleError'
+      tags:
+        - Branch
+  '/db/{db_branch_name}/migrations/plan':
+    summary: Migration Plan
+    description: This endpoint enables creating a migration plan for a given database branch.
+    parameters:
+      - $ref: '#/components/parameters/DBBranchNameParam'
+    post:
+      operationId: getBranchMigrationPlan
+      summary: Compute migration plan
+      description: Compute a migration plan from a target schema the branch should be migrated too.
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Schema'
+      responses:
+        '200':
+          $ref: '#/components/responses/BranchMigrationPlan'
+        '400':
+          $ref: '#/components/responses/SimpleError'
+        '404':
+          $ref: '#/components/responses/SimpleError'
+      tags:
+        - Branch
+  '/db/{db_branch_name}/stats':
+    summary: Branch Statistics
+    description: This endpoint presents a number of statistics on a given database's branch.
+    parameters:
+      - $ref: '#/components/parameters/DBBranchNameParam'
+    get:
+      operationId: getBranchStats
+      summary: Branch stats
+      description: Get branch usage metrics.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  interval:
+                    type: string
+                  resolution:
+                    type: string
+                  numberOfRecords:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/MetricsDatapoint'
+                  writesOverTime:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/MetricsDatapoint'
+                  readsOverTime:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/MetricsDatapoint'
+                  readLatency:
+                    $ref: '#/components/schemas/MetricsLatency'
+                  writeLatency:
+                    $ref: '#/components/schemas/MetricsLatency'
+                  warning:
+                    type: string
+                required:
+                  - timestamp
+                  - interval
+                  - resolution
+        '400':
+          $ref: '#/components/responses/SimpleError'
+        '404':
+          $ref: '#/components/responses/SimpleError'
+      tags:
+        - Branch
+  '/db/{db_branch_name}/tables/{table_name}':
+    summary: Database Table by Name
+    description: This endpoint provides a way to mutate a specific table on a database.
+    parameters:
+      - $ref: '#/components/parameters/DBBranchNameParam'
+      - $ref: '#/components/parameters/TableNameParam'
+    put:
+      operationId: createTable
+      summary: Create table
+      description: Creates a new table with the given name. Returns 422 if a table with the same name already exists.
+      responses:
+        '204':
+          description: No Content
+        '400':
+          $ref: '#/components/responses/SimpleError'
+        '404':
+          $ref: '#/components/responses/SimpleError'
+        '422':
+          $ref: '#/components/responses/SimpleError'
+      tags:
+        - Table
+    delete:
+      operationId: deleteTable
+      summary: Delete table
+      description: Deletes the table with the given name.
+      responses:
+        '204':
+          description: No Content
+        '400':
+          $ref: '#/components/responses/SimpleError'
+        '404':
+          description: Not Found
+      tags:
+        - Table
+    patch:
+      operationId: updateTable
+      summary: Update table
+      description: |-
+        Update table. Currently there is only one update operation supported: renaming the table by providing a new name.
+
+        In the example below, we rename a table from “users” to “people”:
+
+        ```jsx
+        PATCH /db/test:main/tables/users
+        {
+          "name": "people"
+        }
+        ```
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              description: ''
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+              required:
+                - name
+      responses:
+        '204':
+          description: No Content
+        '400':
+          $ref: '#/components/responses/SimpleError'
+        '404':
+          $ref: '#/components/responses/SimpleError'
+      tags:
+        - Table
+  '/db/{db_branch_name}/tables/{table_name}/schema':
+    summary: Table Schema
+    description: This endpoint enables reading or updating the schema of a given table.
+    parameters:
+      - $ref: '#/components/parameters/DBBranchNameParam'
+      - $ref: '#/components/parameters/TableNameParam'
+    get:
+      operationId: getTableSchema
+      summary: Get table schema
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  columns:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Column'
+                required:
+                  - columns
+        '400':
+          $ref: '#/components/responses/SimpleError'
+        '404':
+          $ref: '#/components/responses/SimpleError'
+      tags:
+        - Table
+    put:
+      operationId: setTableSchema
+      summary: Update table schema
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                columns:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Column'
+              required:
+                - columns
+      responses:
+        '204':
+          description: No Content
+        '400':
+          $ref: '#/components/responses/SimpleError'
+        '404':
+          $ref: '#/components/responses/SimpleError'
+        '409':
+          $ref: '#/components/responses/SimpleError'
+      tags:
+        - Table
+  '/db/{db_branch_name}/tables/{table_name}/columns':
+    summary: Table Columns
+    description: This endpoint allows working with a table's columns.
+    parameters:
+      - $ref: '#/components/parameters/DBBranchNameParam'
+      - $ref: '#/components/parameters/TableNameParam'
+    get:
+      operationId: getTableColumns
+      summary: Get the columns
+      description: |
+        Retrieves the list of table columns and their definition. This endpoint returns the column list with object columns being reported with their
+        full dot-separated path (flattened).
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  columns:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Column'
+                example:
+                  columns:
+                    - name: name
+                      type: string
+                    - name: email
+                      type: email
+                    - name: settings.plan
+                      type: string
+                    - name: settings.dark
+                      type: bool
+                required:
+                  - columns
+        '400':
+          $ref: '#/components/responses/SimpleError'
+        '404':
+          $ref: '#/components/responses/SimpleError'
+        '500':
+          description: Internal Server Error
+      tags:
+        - Table
+    post:
+      operationId: addTableColumn
+      summary: Creates a new column
+      description: |
+        Adds a new column to the table. The body of the request should contain the column definition. In the column definition, the 'name' field should
+        contain the full path separated by dots. If the parent objects do not exists, they will be automatically created. For example,
+        passing `"name": "address.city"` will auto-create the `address` object if it doesn't exist.
+      requestBody:
+        description: The column definition.
+        content:
+          application/json:
+            schema:
+              example:
+                value:
+                  name: settings.labels
+                  type: multiple
+              $ref: '#/components/schemas/Column'
+              Add number column to object:
+                value:
+                  name: address.zipcode
+                  type: int
+      responses:
+        '200':
+          $ref: '#/components/responses/MigrationIdResponse'
+        '400':
+          $ref: '#/components/responses/SimpleError'
+        '404':
+          $ref: '#/components/responses/SimpleError'
+      tags:
+        - Table
+  '/db/{db_branch_name}/tables/{table_name}/columns/{column_name}':
+    summary: Single Table Column
+    description: This endpoint allows working with a single column from a given table.
+    parameters:
+      - $ref: '#/components/parameters/DBBranchNameParam'
+      - $ref: '#/components/parameters/TableNameParam'
+      - $ref: '#/components/parameters/ColumnNameParam'
+    get:
+      operationId: getColumn
+      summary: Get column information
+      description: 'Get the definition of a single column. To refer to sub-objects, the column name can contain dots. For example `address.country`.'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                example:
+                  value:
+                    name: settings.labels
+                    type: multiple
+                $ref: '#/components/schemas/Column'
+        '400':
+          $ref: '#/components/responses/SimpleError'
+        '404':
+          $ref: '#/components/responses/SimpleError'
+        '500':
+          description: Internal Server Error
+      tags:
+        - Table
+    delete:
+      operationId: deleteColumn
+      summary: Deletes a column
+      description: 'Deletes the specified column. To refer to sub-objects, the column name can contain dots. For example `address.country`.'
+      responses:
+        '200':
+          $ref: '#/components/responses/MigrationIdResponse'
+        '400':
+          $ref: '#/components/responses/SimpleError'
+        '404':
+          $ref: '#/components/responses/SimpleError'
+      tags:
+        - Table
+    patch:
+      operationId: updateColumn
+      summary: Updates a column
+      description: |
+        Update column with partial data. Can be used for renaming the column by providing a new "name" field. To refer to sub-objects, the column name can contain dots. For example `address.country`.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              description: ''
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+              example:
+                name: newName
+                description: Sample new description
+              required:
+                - name
+            examples:
+              Rename column:
+                value:
+                  name: new_name
+      responses:
+        '200':
+          $ref: '#/components/responses/MigrationIdResponse'
+        '400':
+          $ref: '#/components/responses/SimpleError'
+        '404':
+          $ref: '#/components/responses/SimpleError'
+      tags:
+        - Table
+  '/db/{db_branch_name}/tables/{table_name}/data':
+    summary: Table Data
+    description: 'This endpoint enables mutating data into a given database table. To query data, please see the [query endpoint](query).'
+    parameters:
+      - $ref: '#/components/parameters/DBBranchNameParam'
+      - $ref: '#/components/parameters/TableNameParam'
+    post:
+      operationId: insertRecord
+      summary: Insert record
+      description: Insert a new Record into the Table
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                  _version:
+                    type: integer
+        '400':
+          $ref: '#/components/responses/SimpleError'
+        '404':
+          $ref: '#/components/responses/SimpleError'
+      tags:
+        - Records
+  '/db/{db_branch_name}/tables/{table_name}/data/{record_id}':
+    summary: Table Record
+    description: 'This endpoint enables mutating a given record in a table, referenced by its ID.'
+    parameters:
+      - $ref: '#/components/parameters/DBBranchNameParam'
+      - $ref: '#/components/parameters/TableNameParam'
+      - $ref: '#/components/parameters/RecordIDParam'
+    put:
+      operationId: insertRecordWithID
+      summary: Insert record with ID
+      parameters:
+        - name: createOnly
+          in: query
+          schema:
+            type: boolean
+        - name: ifVersion
+          in: query
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Record ID and version
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                  _version:
+                    type: integer
+        '400':
+          $ref: '#/components/responses/SimpleError'
+        '404':
+          $ref: '#/components/responses/SimpleError'
+        '422':
+          $ref: '#/components/responses/SimpleError'
+      tags:
+        - Records
+    delete:
+      operationId: deleteRecord
+      summary: Delete record from table
+      responses:
+        '204':
+          description: No Content
+        '400':
+          $ref: '#/components/responses/SimpleError'
+        '404':
+          $ref: '#/components/responses/SimpleError'
+      tags:
+        - Records
+    get:
+      operationId: getRecord
+      summary: Get record by ID
+      description: Retrieve record by ID
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                columns:
+                  $ref: '#/components/schemas/ColumnsFilter'
+      responses:
+        '200':
+          description: Record with ID and version
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Record'
+        '400':
+          $ref: '#/components/responses/SimpleError'
+        '404':
+          $ref: '#/components/responses/SimpleError'
+      tags:
+        - Records
+  '/db/{db_branch_name}/tables/{table_name}/bulk':
+    summary: Bulk Table Operations
+    description: 'This endpoint enables bulk operations on a given table. For now, we only allow bulk inserting.'
+    parameters:
+      - $ref: '#/components/parameters/DBBranchNameParam'
+      - $ref: '#/components/parameters/TableNameParam'
+    post:
+      operationId: bulkInsertTableRecords
+      summary: Bulk insert records
+      description: Bulk insert records
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                records:
+                  type: array
+                  items:
+                    type: object
+              required:
+                - records
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  recordIDs:
+                    type: array
+                    items:
+                      type: string
+                required:
+                  - recordIDs
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        status:
+                          type: integer
+                        message:
+                          type: string
+                      required:
+                        - status
+                required:
+                  - errors
+        '404':
+          $ref: '#/components/responses/SimpleError'
+      tags:
+        - Records
+      x-experimental: true
+  '/db/{db_branch_name}/tables/{table_name}/query':
+    summary: Query Table Data
+    description: 'This endpoint serves data from a given table, inside a specific database''s branch.'
+    parameters:
+      - $ref: '#/components/parameters/DBBranchNameParam'
+      - $ref: '#/components/parameters/TableNameParam'
+    post:
+      operationId: queryTable
+      summary: Query table
+      description: |
+        The Query Table API can be used to retrieve all records in a table.
+        The API support filtering, sorting, selecting a subset of columns, and pagination.
+
+        The overall structure of the request looks like this:
+
+        ```jsx
+        POST /db/<dbname>:<branch>/tables/<table>/query
+        {
+          "filter": {
+            "$all": [...]
+            "$any": [...]
+            ...
+          },
+          "sort": {
+            "multiple": [...]
+            ...
+          }
+          "group": {
+            ...
+            "filter": {
+            }
+          }
+          "paging": {
+          },
+          "columns": [...],
+        }
+        ```
+
+        # Column selection
+
+        If the `columns` array is not specified, all columns are included. For link
+        fields, only the ID column of the linked records is included in the response.
+
+        If the `columns` array is specified, only the selected columns are included.
+        The `*` wildcard can be used to select all columns of the given array
+
+        For objects and link fields, if the column name of the object is specified, we
+        include all of its sub-keys. If only some sub-keys are specified (via dotted
+        notation, e.g. `"settings.plan"` ), then only those sub-keys from the object
+        are included.
+
+        By the way of example, assuming two tables like this:
+
+        ```tsx
+        table users {
+          name string
+          email string
+          address object{
+            street string
+            number string
+            zipcode string
+          }
+          team link(team)
+        }
+
+        table team {
+          name string
+          code string
+          owner link(users)
+        }
+        ```
+
+        A query like this:
+
+        ```json
+        POST /db/<dbname>:<branch>/tables/<table>/query
+        {
+          "columns": [
+            "name",
+            "address.*"
+          ]
+        }
+        ```
+
+        returns objects like:
+
+        ```tsx
+        {
+          "name": "Kilian",
+          "address": {
+            "street": "New street",
+            "number": 41,
+            "zipcode": 10407
+          }
+        }
+        ```
+
+        while a query like this:
+
+        ```tsx
+        POST /db/<dbname>:<branch>/tables/<table>/query
+        {
+          "columns": [
+            "name",
+            "address.street"
+          ]
+        }
+        ```
+
+        returns objects like:
+
+        ```tsx
+        {
+          "name": "Kilian",
+          "address": {
+            "street": "New street",
+          }
+        }
+        ```
+
+        If you want to return all columns from the main table and selected columns from the linked table, you can do it like this:
+
+        ```tsx
+        {
+          "columns": [
+            "*",
+            "team.name"
+          ]
+        }
+        ```
+
+        The `"*"` in the above means all columns, including columns of objects. This returns data like:
+
+        ```tsx
+        {
+          "name": "Kilian",
+          "email": "kilian@gmail.com",
+          "address": {
+            "street": "New street",
+            "number": 41,
+            "zipcode": 10407
+          },
+          "team": {
+            "_id": "XX",
+            "_version": 0,
+            "name": "first team"
+          }
+        }
+        ```
+
+        If you want all columns of the linked table, you can do:
+
+        ```tsx
+        {
+          "columns": [
+            "*",
+            "team.*"
+          ]
+        }
+        ```
+
+        This returns, for example:
+
+        ```tsx
+        {
+          "name": "Kilian",
+          "email": "kilian@gmail.com",
+          "address": {
+            "street": "New street",
+            "number": 41,
+            "zipcode": 10407
+          },
+          "team": {
+            "_id": "XX",
+            "_version": 0,
+            "name": "first team",
+            "code": "A1"
+          }
+        }
+        ```
+
+        # Filtering
+
+        There are two types of operators:
+
+        - Operators that work on a single column: `$is`, `$contains`, `$pattern`,
+          `$includes`, `$gt`, etc.
+        - Control operators that combine multiple conditions: `$any`, `$all`, `$not` ,
+          `$none`, etc.
+
+        All operators start with an `$` to differentiate them from column names
+        (which are not allowed to start with an underscore).
+
+        ### Exact matching and control operators
+
+        Filter by one column:
+
+        ```jsx
+        {
+          "filter": {
+            "<column_name>": "value"
+          }
+        }
+        ```
+
+        This is equivalent to using the `$is` operator:
+
+        ```jsx
+        {
+          "filter": {
+            "<column_name>": {
+              "$is": "value"
+            }
+          }
+        }
+        ```
+
+        For example:
+
+        ```jsx
+        {
+          "filter": {
+              "name": "r2",
+          }
+        }
+        ```
+
+        Or:
+
+        ```jsx
+        {
+          "filter": {
+            "name": {
+              "$is": "r2"
+            }
+          }
+        }
+        ```
+
+        For objects, both dots and nested versions work:
+
+        ```jsx
+        {
+          "filter": {
+              "settings.plan": "free",
+          }
+        }
+        ```
+
+        ```jsx
+        {
+          "filter": {
+            "settings": {
+              "plan": "free"
+            },
+          },
+        }
+        ```
+
+        If you want to OR together multiple values, you can use an array of values:
+
+        ```jsx
+        {
+          "filter": {
+            "settings.plan": ["free", "paid"]
+          },
+        }
+        ```
+
+        Same query with `$is` operator:
+
+        ```jsx
+        {
+          "filter": {
+            "settings.plan": { "$is": ["free", "paid"]}
+          },
+        }
+        ```
+
+        Specifying multiple columns, ANDs them together:
+
+        ```jsx
+        {
+          "filter": {
+              "settings.dark": true,
+              "settings.plan": "free",
+          },
+        }
+        ```
+
+        To be more explicit about it, you can use `$all` or `$any`:
+
+        ```jsx
+        {
+          "filter": {
+              "$any": {
+                "settings.dark": true,
+                "settings.plan": "free",
+              }
+          },
+        }
+        ```
+
+        `$all` and `$any` can also receive an array of objects, which allows for repeating columns:
+
+        ```jsx
+        {
+          "filter": {
+            "$any": [
+              {
+                "name": "r1",
+              },
+              {
+                "name": "r2",
+              },
+            ],
+        }
+        ```
+
+        You can check for a value being not-null with `$exists`:
+
+        ```jsx
+        {
+          "filter": {
+            "$exists": "settings",
+          },
+        }
+        ```
+
+        This can be combined with `$all` or `$any` :
+
+        ```jsx
+        {
+          "filter": {
+            "$all": [
+              {
+                "$exists": "settings",
+              },
+              {
+                "$exists": "name",
+              },
+            ],
+          }
+        }
+        ```
+
+        We can also make the negation version, `$notExists` :
+
+        ```jsx
+        {
+          "filter": {
+            "$notExists": "settings",
+          },
+        }
+        ```
+
+        ### Partial match
+
+        `$contains` is the simplest operator for partial matching. We should generally
+        discourage overusing `$contains` because it typically can't make use of
+        indices.
+
+        ```jsx
+        {
+          "filter": {
+            "<column_name>": {
+              "$contains": "value"
+            }
+          }
+        }
+        ```
+
+        Wildcards are supported via the `$pattern` operator:
+
+        ```jsx
+        {
+          "filter": {
+            "<column_name>": {
+                "$pattern": "v*alue*"
+            }
+          }
+        }
+        ```
+
+        We could also have `$endsWith` and `$startsWith` operators:
+
+        ```jsx
+        {
+          "filter": {
+            "<column_name>": {
+                "$endsWith": ".gz"
+            },
+            "<column_name>": {
+                "$startsWith": "tmp-"
+            }
+          }
+        }
+        ```
+
+        ### Numeric/date ranges
+
+        ```jsx
+        {
+          "filter": {
+              "<column_name>": {
+                "$ge": 0,
+                "$lt": 100
+              }
+          }
+        }
+        ```
+
+        The supported operators are `$gt`, `$lt`, `$ge`, `$le`.
+
+        Date ranges would support the same operators, with the date as string in RFC 3339:
+
+        ```jsx
+        {
+          "filter": {
+              "<column_name>": {
+                "$gt": "2019-10-12T07:20:50.52Z",
+                "$lt": "2021-10-12T07:20:50.52Z"
+              }
+          }
+        }
+        ```
+
+        ### Negations
+
+        A general `$not` operator can inverse any operation.
+
+        ```jsx
+        {
+          "filter": {
+            "$not": {
+              "<column_name1>": "value1",
+              "<column_name2>": "value1"
+            }
+          }
+        }
+        ```
+
+        Note: in the above the two condition are AND together, so this does (NOT ( ...
+        AND ...))
+
+        Or more complex:
+
+        ```jsx
+        {
+          "filter": {
+            "$not": {
+              "$any": [{
+                "<column_name1>": "value1"
+              }, {
+                "$all": [{
+                  "<column_name2>": "value2"
+                }, {
+                  "<column_name3>": "value3"
+                }]
+              }]
+            }
+          }
+        }
+        ```
+
+        The `$not: { $any: {}}` can be shorted using the `$none` operator:
+
+        ```jsx
+        {
+          "filter": {
+            "$none": {
+              "<column_name1>": "value1",
+              "<column_name2>": "value1"
+            }
+          }
+        }
+        ```
+
+        In addition, we can add specific operators like `$isNot` to simplify expressions:
+
+        ```jsx
+        {
+          "filter": {
+            "<column_name>": {
+              "$isNot": "2019-10-12T07:20:50.52Z"
+            }
+          }
+        }
+        ```
+
+        ### Working with arrays
+
+        To test that an array contains a value, use `$includes`.
+
+        ```jsx
+        {
+          "filter": {
+            "<array_name": {
+              "$includes": "value"
+            }
+          }
+        }
+        ```
+
+        The `$includes` operator accepts a custom predicate that will check if any
+        array values matches the predicate. For example a complex predicate can include
+        the `$all` , `$contains` and `$endsWith` operators:
+
+        ```json
+        {
+          "filter": {
+            "<array name>": {
+              "$includes": {
+                "$all": [
+                  {"$contains": "label"},
+                  {"$not": {"$endsWith": "-debug"}}
+                ]
+              }
+            }
+          }
+        }
+        ```
+
+        The `$includes` all operator succeeds if any column in the array matches the
+        predicate. The `$includesAll` operator succeeds if all array items match the
+        predicate. The `$includesNone` operator succeeds if no array item matches the
+        predicate. The `$includes` operator is a synonym for the `$includesAny`
+        operator.
+
+        # Sorting
+
+        Sorting by one element:
+
+        ```jsx
+        POST /db/demo:main/tables/table/query
+        {
+          "sort": {
+            "index": "asc"
+          }
+        }
+        ```
+
+        or descendently:
+
+        ```jsx
+        POST /db/demo:main/tables/table/query
+        {
+          "sort": {
+            "index": "desc"
+          }
+        }
+        ```
+
+        Sorting by multiple fields:
+
+        ```jsx
+        POST /db/demo:main/tables/table/query
+        {
+          "sort": [
+            {
+              "index": "desc"
+            },
+            {
+              "createdAt": "desc"
+            }
+          ]
+        }
+        ```
+
+
+        ### Pagination
+
+        The cursor can be used to select the next or the previous page.
+
+        The `page` object might contain the follow keys:
+
+        - `after`: Return the next page 'after' the current cursor
+        - `before`: Return the previous page 'before' the current cursor.
+        - `first`: Return the first page in the table from a cursor.
+        - `last`: Return the last page in the table from a cursor.
+        - `size`: Number of records the user wants to retrieve
+        - `offset`: Offset allows users to skip the next N entries.
+
+        The API server should define a default and a maximum page size. The
+        `page.size` parameter is invalid if it is `<=0` or if it exceeds the maximum
+        page size.
+
+        If `page.size` is missing we use the default page size.
+
+        The request will fail if an invalid cursor value is given to `page.before`,
+        `page.after`, `page.first` , or `page.last`. No other cursor setting must be
+        used if `page.first` or `page.last` is set in a query.
+
+        If both `page.before` and `page.after` parameters are present we treat the
+        request as a range query. The range query will return all entries after
+        `page.after`, but before `page.before`, up to `page.size` or the maximum
+        page size. This query requires both cursors to use the same filters and sort
+        settings, plus we require `page.after < page.before`. The range query returns
+        a new cursor. If the range encompass multiple pages the next page in the range
+        can be queried by update `page.after` to the returned cursor while keeping the
+        `page.before` cursor from the first range query.
+
+        The `page.offset` parameter supports skip N rows. It is possible to skip P
+        pages by setting `page.offset = P * *page.size`.
+        Using offset requires the database to query and throw away rows. Although this
+        approach is still more cheap then querying every single page it comes with a
+        cost for large datasets.
+        Thusly the API will limit the maximum* `page.offset` . Users can only skip a
+        limit number of pages at a time.
+
+        The `filter` , `columns`,  `sort` , and `page.size` configuration will be
+        encoded with the cursor.  The pagination request request will be invalid if
+        `filter` or `sort` is set. The columns returned and page size can be changed
+        anytime by passing the `columns` or `page.size` settings to the next query.
+
+        **Special cursors:**
+
+        - `page.after=end`: Result points past the last entry. The list of records
+          returned is empty, but `page.meta.cursor` will include a cursor that can be
+          used to "tail" the table from the end waiting for new data to be inserted.
+        - `page.before=end`: This cursor returns the last page.
+        - `page.first=<cursor>`: Go to first page. This is equivalent to querying the
+          first page without a cursor but `filter` and `sort` . Yet the `page.first`
+          cursor can be convenient at times as user code does not need to remember the
+          filter, sort, columns or page size configuration. All these information are
+          read from the cursor.
+        - `page.last=<cursor>`: Go to first page. This is equivalent to querying the
+          last page with `page.before=end`, `filter`, and `sort` . Yet the
+          `page.last` cursor can be more convenient at times as user code does not
+          need to remember the filter, sort, columns or page size configuration. All
+          these information are read from the cursor.
+
+        When using special cursors like `page[after]=end` or `page[before]=end`, we
+        still allow `filter` and `sort` to be set.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                filter:
+                  $ref: '#/components/schemas/FilterExpression'
+                sort:
+                  $ref: '#/components/schemas/SortExpression'
+                page:
+                  $ref: '#/components/schemas/PageConfig'
+                columns:
+                  $ref: '#/components/schemas/ColumnsFilter'
+      responses:
+        '200':
+          $ref: '#/components/responses/QueryResponse'
+        '400':
+          $ref: '#/components/responses/SimpleError'
+        '404':
+          $ref: '#/components/responses/SimpleError'
+      tags:
+        - Records
+components:
+  parameters:
+    APIKeyNameParam:
+      name: key_name
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/APIKeyName'
+      description: API Key name
+    ColumnNameParam:
+      name: column_name
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/ColumnName'
+      description: The Column name
+    DBBranchNameParam:
+      name: db_branch_name
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/DBBranchName'
+      description: |
+        The DBBranchName matches the pattern `{db_name}:{branch_name}`.
+    DBNameParam:
+      name: db_name
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/DBName'
+      description: The Database Name
+    InviteKeyParam:
+      name: invite_key
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/InviteKey'
+      description: Invite ID
+    RecordIDParam:
+      name: record_id
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/RecordID'
+      description: The Record name
+    TableNameParam:
+      name: table_name
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/TableName'
+      description: The Table name
+    UserIDParam:
+      name: user_id
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/UserID'
+      description: UserID
+    WorkspaceIDParam:
+      name: workspace_id
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/WorkspaceID'
+      description: Workspace name
+  schemas:
+    APIKeyName:
+      type: string
+      pattern: '^[a-zA-Z0-9][a-zA-Z0-9_\-~]*'
+      title: APIKeyName
+    Branch:
+      type: object
+      properties:
+        name:
+          type: string
+        createdAt:
+          $ref: '#/components/schemas/DateTime'
+      additionalProperties: false
+      required:
+        - name
+        - createdAt
+    BranchMetadata:
+      description: ''
+      type: object
+      properties:
+        repository:
+          type: string
+          minLength: 1
+        branch:
+          $ref: '#/components/schemas/BranchName'
+        stage:
+          type: string
+          minLength: 1
+        labels:
+          type: array
+          items:
+            type: string
+      example:
+        repository: github.com/my/repository
+        branch: feature-login
+        stage: testing
+        labels:
+          - epic-100
+    BranchMigration:
+      type: object
+      properties:
+        id:
+          type: string
+        parentID:
+          type: string
+        status:
+          type: string
+        title:
+          type: string
+        lastGitRevision:
+          type: string
+        localChanges:
+          type: boolean
+        createdAt:
+          $ref: '#/components/schemas/DateTime'
+        newTables:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/Table'
+        removedTables:
+          type: array
+          items:
+            type: string
+        tableMigrations:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/TableMigration'
+        newTableOrder:
+          type: array
+          items:
+            type: string
+        renamedTables:
+          type: array
+          items:
+            $ref: '#/components/schemas/TableRename'
+      required:
+        - status
+        - localChanges
+        - newTableOrder
+      title: Migration
+    BranchName:
+      type: string
+      pattern: '^[a-zA-Z0-9][a-zA-Z0-9_\-~]*'
+      title: BranchName
+    Column:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+          enum:
+            - bool
+            - int
+            - string
+            - text
+            - email
+            - multiple
+            - link
+            - object
+        link:
+          type: object
+          properties:
+            table:
+              type: string
+            tableID:
+              type: string
+            lookupFields:
+              type: array
+              items:
+                type: string
+          required:
+            - table
+        columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/Column'
+      required:
+        - name
+        - type
+      title: Column
+    ColumnMigration:
+      type: object
+      properties:
+        old:
+          $ref: '#/components/schemas/Column'
+        new:
+          $ref: '#/components/schemas/Column'
+      required:
+        - old
+        - new
+      title: ColumnMigration
+    ColumnName:
+      type: string
+      pattern: '^[a-zA-Z0-9][a-zA-Z0-9_\-~\.]*'
+      title: ColumnName
+    ColumnsFilter:
+      type: array
+      items:
+        type: string
+    DBBranch:
+      type: object
+      properties:
+        databaseName:
+          $ref: '#/components/schemas/DBName'
+        branchName:
+          $ref: '#/components/schemas/BranchName'
+        createdAt:
+          $ref: '#/components/schemas/DateTime'
+        id:
+          type: string
+        version:
+          type: number
+        lastMigrationID:
+          type: string
+        metadata:
+          $ref: '#/components/schemas/BranchMetadata'
+        startedFrom:
+          $ref: '#/components/schemas/StartedFromMetadata'
+        schema:
+          $ref: '#/components/schemas/Schema'
+      required:
+        - databaseName
+        - branchName
+        - createdAt
+        - id
+        - version
+        - lastMigrationID
+        - schema
+      title: DBBranch
+    DBBranchName:
+      description: |
+        The DBBranchName matches the pattern `{db_name}:{branch_name}`.
+      type: string
+      pattern: '^[a-zA-Z0-9][a-zA-Z0-9_\-~]*:[a-zA-Z0-9][a-zA-Z0-9_\-~]*'
+      title: DBBranchName
+    DBName:
+      type: string
+      pattern: '^[a-zA-Z0-9][a-zA-Z0-9_\-~]*'
+      title: DBName
+    DateTime:
+      type: string
+      format: date-time
+      title: DateTime
+    FilterColumn:
+      anyOf:
+        - $ref: '#/components/schemas/FilterColumnIncludes'
+        - $ref: '#/components/schemas/FilterPredicate'
+        - $ref: '#/components/schemas/FilterList'
+    FilterColumnIncludes:
+      type: object
+      properties:
+        $includes:
+          $ref: '#/components/schemas/FilterPredicate'
+        $includesAny:
+          $ref: '#/components/schemas/FilterPredicate'
+        $includesAll:
+          $ref: '#/components/schemas/FilterPredicate'
+        $includesNone:
+          $ref: '#/components/schemas/FilterPredicate'
+      additionalProperties: false
+      maxProperties: 1
+      minProperties: 1
+    FilterExpression:
+      type: object
+      properties:
+        $exists:
+          type: string
+        $existsNot:
+          type: string
+        $any:
+          $ref: '#/components/schemas/FilterList'
+        $all:
+          $ref: '#/components/schemas/FilterList'
+        $none:
+          $ref: '#/components/schemas/FilterList'
+        $not:
+          $ref: '#/components/schemas/FilterList'
+      additionalProperties:
+        $ref: '#/components/schemas/FilterColumn'
+      minProperties: 1
+    FilterList:
+      oneOf:
+        - $ref: '#/components/schemas/FilterExpression'
+        - type: array
+          items:
+            $ref: '#/components/schemas/FilterExpression'
+    FilterPredicate:
+      oneOf:
+        - $ref: '#/components/schemas/FilterValue'
+        - type: array
+          items:
+            $ref: '#/components/schemas/FilterPredicate'
+          minLength: 1
+        - $ref: '#/components/schemas/FilterPredicateOp'
+        - $ref: '#/components/schemas/FilterPredicateRangeOp'
+    FilterPredicateOp:
+      type: object
+      properties:
+        $any:
+          oneOf:
+            - type: array
+              items:
+                $ref: '#/components/schemas/FilterPredicate'
+        $all:
+          oneOf:
+            - type: array
+              items:
+                $ref: '#/components/schemas/FilterPredicate'
+        $none:
+          oneOf:
+            - $ref: '#/components/schemas/FilterPredicate'
+            - type: array
+              items:
+                $ref: '#/components/schemas/FilterPredicate'
+        $not:
+          oneOf:
+            - $ref: '#/components/schemas/FilterPredicate'
+            - type: array
+              items:
+                $ref: '#/components/schemas/FilterPredicate'
+        $is:
+          oneOf:
+            - $ref: '#/components/schemas/FilterValue'
+            - type: array
+              items:
+                $ref: '#/components/schemas/FilterValue'
+        $isNot:
+          oneOf:
+            - $ref: '#/components/schemas/FilterValue'
+            - type: array
+              items:
+                $ref: '#/components/schemas/FilterValue'
+        $lt:
+          $ref: '#/components/schemas/FilterRangeValue'
+        $le:
+          $ref: '#/components/schemas/FilterRangeValue'
+        $gt:
+          $ref: '#/components/schemas/FilterRangeValue'
+        $ge:
+          $ref: '#/components/schemas/FilterRangeValue'
+        $contains:
+          type: string
+        $startsWith:
+          type: string
+        $endsWith:
+          type: string
+        $pattern:
+          type: string
+      additionalProperties: false
+      maxProperties: 1
+      minProperties: 1
+    FilterPredicateRangeOp:
+      type: object
+      properties:
+        $lt:
+          $ref: '#/components/schemas/FilterRangeValue'
+        $le:
+          $ref: '#/components/schemas/FilterRangeValue'
+        $gt:
+          $ref: '#/components/schemas/FilterRangeValue'
+        $ge:
+          $ref: '#/components/schemas/FilterRangeValue'
+      additionalProperties: false
+      maxProperties: 2
+      minProperties: 2
+    FilterRangeValue:
+      oneOf:
+        - type: number
+        - type: string
+    FilterValue:
+      oneOf:
+        - type: number
+        - type: string
+        - type: boolean
+    InviteID:
+      type: string
+      pattern: '^[a-zA-Z0-9]+'
+      title: InviteID
+    InviteKey:
+      type: string
+      pattern: '^ik_[a-zA-Z0-9]+'
+      title: InviteKey
+    ListBranchesResponse:
+      type: object
+      properties:
+        databaseName:
+          type: string
+        displayName:
+          type: string
+        branches:
+          type: array
+          items:
+            $ref: '#/components/schemas/Branch'
+      additionalProperties: false
+      required:
+        - databaseName
+        - displayName
+        - branches
+    ListDatabasesResponse:
+      type: object
+      properties:
+        databases:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              displayName:
+                type: string
+              createdAt:
+                $ref: '#/components/schemas/DateTime'
+              numberOfBranches:
+                type: integer
+              ui:
+                type: object
+                properties:
+                  color:
+                    type: string
+            required:
+              - name
+              - displayName
+              - createdAt
+              - numberOfBranches
+            additionalProperties: false
+    MetricsDatapoint:
+      type: object
+      properties:
+        timestamp:
+          type: string
+        value:
+          type: integer
+      required:
+        - timestamp
+        - value
+      title: Datapoint
+    MetricsLatency:
+      type: object
+      properties:
+        p50:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricsDatapoint'
+        p90:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricsDatapoint'
+      title: MetricsLatency
+    PageConfig:
+      description: Pagination settings.
+      type: object
+      properties:
+        after:
+          description: Query the next page that follow the cursor.
+          type: string
+        before:
+          description: Query the previous page before the cursor.
+          type: string
+        first:
+          description: Query the first page from the cursor.
+          type: string
+        last:
+          description: Query the last page from the cursor.
+          type: string
+        size:
+          description: Set page size. If the size is missing it is read from the cursor. If no cursor is given xata will choose the default page size.
+          type: integer
+          default: 20
+        offset:
+          description: Use offset to skip entries. To skip pages set offset to a multiple of size.
+          type: integer
+          default: 0
+      title: PageConfig
+    Record:
+      description: Xata Table Record
+      type: object
+      properties:
+        _id:
+          $ref: '#/components/schemas/RecordID'
+        _version:
+          description: The record's version. Can be used for optimistic concurrency control.
+          type: integer
+        _table:
+          description: The record's table name. APIs that return records from multiple tables will set _table accordingly.
+          type: string
+        _warnings:
+          description: Encoding/Decoding errors
+          type: array
+          items:
+            type: string
+      additionalProperties: true
+      required:
+        - _id
+        - _version
+      title: Record
+    RecordID:
+      type: string
+      pattern: '^[a-zA-Z0-9][a-zA-Z0-9_-~:]*'
+      title: RecordID
+    RecordsMetadata:
+      description: Records metadata
+      type: object
+      properties:
+        page:
+          type: object
+          properties:
+            cursor:
+              description: last record id
+              type: string
+            more:
+              description: true if more records can be fetch
+              type: boolean
+          required:
+            - cursor
+            - more
+      required:
+        - page
+    RevLink:
+      type: object
+      properties:
+        linkID:
+          type: string
+        table:
+          type: string
+      required:
+        - linkID
+        - table
+      title: RevLink
+    Role:
+      type: string
+      enum:
+        - owner
+        - maintainer
+    Schema:
+      type: object
+      properties:
+        tables:
+          type: array
+          items:
+            $ref: '#/components/schemas/Table'
+        tablesOrder:
+          type: array
+          items:
+            type: string
+      required:
+        - tables
+      title: Schema
+    SortExpression:
+      oneOf:
+        - type: array
+          items:
+            type: string
+        - type: object
+          additionalProperties:
+            $ref: '#/components/schemas/SortOrder'
+        - type: array
+          items:
+            type: object
+            additionalProperties:
+              $ref: '#/components/schemas/SortOrder'
+      title: SortExpression
+    SortOrder:
+      type: string
+      enum:
+        - asc
+        - desc
+      title: SortOrder
+    StartedFromMetadata:
+      type: object
+      properties:
+        branchName:
+          $ref: '#/components/schemas/BranchName'
+        dbBranchID:
+          type: string
+        migrationID:
+          type: string
+      required:
+        - branchName
+        - dbBranchID
+        - migrationID
+      title: StartedFromMetadata
+    Table:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          $ref: '#/components/schemas/TableName'
+        columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/Column'
+        revLinks:
+          type: array
+          items:
+            $ref: '#/components/schemas/RevLink'
+        columnsOrder:
+          type: array
+          items:
+            type: string
+      required:
+        - name
+        - columns
+      title: Table
+    TableMigration:
+      type: object
+      properties:
+        newColumns:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/Column'
+        removedColumns:
+          type: array
+          items:
+            type: string
+        modifiedColumns:
+          type: array
+          items:
+            $ref: '#/components/schemas/ColumnMigration'
+        newColumnOrder:
+          type: array
+          items:
+            type: string
+      required:
+        - newColumnOrder
+      title: TableMigration
+    TableName:
+      type: string
+      pattern: '^[a-zA-Z0-9][a-zA-Z0-9_\-~]*'
+      title: TableName
+    TableRename:
+      description: ''
+      type: object
+      properties:
+        newName:
+          type: string
+          minLength: 1
+        oldName:
+          type: string
+          minLength: 1
+      example:
+        newName: newName
+        oldName: oldName
+      required:
+        - newName
+        - oldName
+    User:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        fullname:
+          type: string
+        image:
+          type: string
+      required:
+        - fullname
+        - email
+        - image
+    UserID:
+      type: string
+      pattern: '^[a-zA-Z0-9][a-zA-Z0-9_-~:]*'
+      title: UserID
+    UserWithID:
+      allOf:
+        - $ref: '#/components/schemas/User'
+        - type: object
+          properties:
+            id:
+              $ref: '#/components/schemas/UserID'
+          required:
+            - id
+    Workspace:
+      allOf:
+        - $ref: '#/components/schemas/WorkspaceMeta'
+        - type: object
+          properties:
+            id:
+              $ref: '#/components/schemas/WorkspaceID'
+            memberCount:
+              type: integer
+            plan:
+              type: string
+              enum:
+                - free
+          required:
+            - id
+            - memberCount
+            - plan
+    WorkspaceID:
+      type: string
+      pattern: '^([a-zA-Z0-9][a-zA-Z0-9_\-~]+-)?[a-zA-Z0-9]{6}'
+      title: WorkspaceID
+    WorkspaceInvite:
+      type: object
+      properties:
+        inviteId:
+          $ref: '#/components/schemas/InviteID'
+        email:
+          type: string
+          format: email
+        expires:
+          type: string
+          format: date-time
+        role:
+          $ref: '#/components/schemas/Role'
+      required:
+        - inviteId
+        - email
+        - expires
+        - role
+    WorkspaceMember:
+      type: object
+      properties:
+        userId:
+          $ref: '#/components/schemas/UserID'
+        fullname:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          $ref: '#/components/schemas/Role'
+      required:
+        - userId
+        - email
+        - fullname
+        - role
+    WorkspaceMembers:
+      type: object
+      properties:
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkspaceMember'
+        invites:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkspaceInvite'
+      required:
+        - members
+        - invites
+    WorkspaceMeta:
+      type: object
+      properties:
+        name:
+          type: string
+        slug:
+          type: string
+      required:
+        - name
+        - slug
+  responses:
+    BranchMigrationPlan:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              version:
+                type: integer
+              migration:
+                $ref: '#/components/schemas/BranchMigration'
+            required:
+              - version
+              - migration
+    MigrationIdResponse:
+      description: Returns the migration ID.
+      content:
+        application/json:
+          schema:
+            description: ''
+            type: object
+            properties:
+              migrationID:
+                type: string
+                minLength: 1
+            example:
+              migrationID: mig_c7m19ilcefoebpqj12p0
+            required:
+              - migrationID
+          examples:
+            example-1:
+              value:
+                migrationID: mig_c7m19ilcefoebpqj12p0
+    QueryResponse:
+      description: OK
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              records:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Record'
+              meta:
+                $ref: '#/components/schemas/RecordsMetadata'
+            required:
+              - records
+              - meta
+    SearchResponse:
+      description: OK
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              records:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Record'
+            required:
+              - records
+    SimpleError:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              id:
+                type: string
+              message:
+                type: string
+              status:
+                type: integer
+            required:
+              - status
+              - message
+tags:
+  - name: Users
+    description: Users management
+    x-displayName: Users
+  - name: Workspaces
+    description: Workespaces management
+    x-displayName: Workspaces
+  - name: auth_other
+    x-displayName: other
+  - name: Database
+    description: Database management.
+    x-displayName: Database
+  - name: Branch
+    description: Branch management.
+    x-displayName: Branch
+  - name: Records
+    description: Record access API.
+    x-displayName: Records
+  - name: Table
+    description: Table management.
+    x-displayName: Table
+  - name: xatabase_other
+    x-displayName: other
+x-tagGroups:
+  - name: auth
+    tags:
+      - Users
+      - Workspaces
+      - auth_other
+    description: Xata.io Auth API
+  - name: xatabase
+    tags:
+      - Database
+      - Branch
+      - Records
+      - Table
+      - xatabase_other
+    description: Xata.io Xatabases API

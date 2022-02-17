@@ -1,0 +1,19 @@
+format_version "1.0"
+
+table teams {
+    name   string { required: true, unique: true }    // Name of the team
+    labels multiple
+    owner  link { table: users }
+}
+
+table users {
+    // Email is the email of the user
+    email email {required: true, unique: true, description: "Email of the user"}
+    full_name  string
+    street  string
+
+    address {
+        zipcode int { required: true, default: 0 }
+    }
+    team link { table: "users" }
+}
