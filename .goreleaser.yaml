@@ -6,8 +6,8 @@ builds:
   - env:
       - CGO_ENABLED=0
     ldflags:
-      - -X main.GitCommit=${.Commit}
-      - -X main.BuildDate=${.Date}
+      - -X main.GitCommit={{ .Commit }}
+      - -X main.BuildDate={{ .Date }}
     goarch:
       - amd64
       - arm64
