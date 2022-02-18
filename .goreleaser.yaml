@@ -12,9 +12,13 @@ builds:
       - linux
       - windows
       - darwin
-    goarch:
-      - amd64
-      - arm64
+    ignore:
+      - goos: darwin
+        goarch: "386"
+      - goos: linux
+        goarch: "386"
+      - goos: windows
+        goarch: "386"
 gomod:
   # Proxy a module from proxy.golang.org, making the builds verifiable.
   # This will only be effective if running against a tag. Snapshots will ignore this setting.
@@ -31,9 +35,6 @@ gomod:
     - GOSUMDB=sum.golang.org
 archives:
   - replacements:
-      darwin: Darwin
-      linux: Linux
-      windows: Windows
       amd64: x86_64
 checksum:
   name_template: 'checksums.txt'
