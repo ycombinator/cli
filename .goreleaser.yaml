@@ -8,17 +8,29 @@ builds:
     ldflags:
       - -X main.GitCommit=${.Commit}
       - -X main.BuildDate=${.Date}
+    goarch:
+      - amd64
+      - arm64
     goos:
       - linux
       - windows
       - darwin
     ignore:
-      - goos: darwin
-        goarch: "386"
       - goos: linux
-        goarch: "386"
+        goarch: arm64
       - goos: windows
-        goarch: "386"
+        goarch: arm64
+archives:
+  - replacements:
+      amd64: x86_64
+      darwin: macOS
+    files:
+      - none* # package only the binary
+    format_overrides:
+      - goos: windows
+        format: zip
+checksum:
+  name_template: 'checksums.txt'
 gomod:
   # Proxy a module from proxy.golang.org, making the builds verifiable.
   # This will only be effective if running against a tag. Snapshots will ignore this setting.
@@ -33,11 +45,6 @@ gomod:
   env:
     - GOPROXY=https://proxy.golang.org,direct
     - GOSUMDB=sum.golang.org
-archives:
-  - replacements:
-      amd64: x86_64
-checksum:
-  name_template: 'checksums.txt'
 snapshot:
   name_template: "{{ incpatch .Version }}-next"
 changelog:
