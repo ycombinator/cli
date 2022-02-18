@@ -10,3 +10,5 @@ dist/
 
 # Local environment settings
 .envrc
+
+dist/

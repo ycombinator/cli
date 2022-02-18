@@ -4,11 +4,14 @@ import "os"
 
 // FileExists returns true if the given file name exists
 func FileExists(filename string) (bool, error) {
-	if _, err := os.Stat(filename); err == nil {
+	_, err := os.Stat(filename)
+	if err == nil {
 		return true, nil
-	} else if os.IsNotExist(err) {
-		return false, nil
-	} else {
-		return false, err
 	}
+
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+
+	return false, err
 }

@@ -398,13 +398,15 @@ type executorEnv struct {
 func (env *executorEnv) executor(ctx context.Context) prompt.Executor {
 	return func(input string) {
 		input = strings.TrimSpace(input)
-		if input == "" {
+		switch {
+		case input == "":
 			return
-		} else if input == "quit" || input == "exit" {
+		case input == "quit" || input == "exit":
 			fmt.Println("Bye!")
 			os.Exit(0)
 			return
-		} else if strings.HasPrefix(input, "prefix") {
+
+		case strings.HasPrefix(input, "prefix"):
 			words := strings.Split(input, " ")
 			if len(words) > 2 {
 				return
