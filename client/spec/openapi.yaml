@@ -26,9 +26,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/UserWithID'
         '400':
-          $ref: '#/components/responses/SimpleError'
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/AuthError'
         '404':
           $ref: '#/components/responses/SimpleError'
+        5XX:
+          description: Unexpected Error
       tags:
         - Users
     put:
@@ -48,9 +52,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/UserWithID'
         '400':
-          $ref: '#/components/responses/SimpleError'
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/AuthError'
         '404':
           $ref: '#/components/responses/SimpleError'
+        5XX:
+          description: Unexpected Error
       tags:
         - Users
     delete:
@@ -61,9 +69,13 @@ paths:
         '204':
           description: No Content
         '400':
-          $ref: '#/components/responses/SimpleError'
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/AuthError'
         '404':
           $ref: '#/components/responses/SimpleError'
+        5XX:
+          description: Unexpected Error
       tags:
         - Users
   /user/keys:
@@ -96,9 +108,13 @@ paths:
                 required:
                   - keys
         '400':
-          $ref: '#/components/responses/SimpleError'
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/AuthError'
         '404':
           $ref: '#/components/responses/SimpleError'
+        5XX:
+          description: Unexpected Error
       tags:
         - Users
   '/user/keys/{key_name}':
@@ -129,9 +145,13 @@ paths:
                   - key
                   - createdAt
         '400':
-          $ref: '#/components/responses/SimpleError'
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/AuthError'
         '404':
           $ref: '#/components/responses/SimpleError'
+        5XX:
+          description: Unexpected Error
       tags:
         - Users
     delete:
@@ -142,9 +162,13 @@ paths:
         '204':
           description: No Content
         '400':
-          $ref: '#/components/responses/SimpleError'
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/AuthError'
         '404':
           $ref: '#/components/responses/SimpleError'
+        5XX:
+          description: Unexpected Error
       tags:
         - Users
   /workspaces:
@@ -167,9 +191,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/Workspace'
         '400':
-          $ref: '#/components/responses/SimpleError'
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/AuthError'
         '404':
           $ref: '#/components/responses/SimpleError'
+        5XX:
+          description: Unexpected Error
       tags:
         - Workspaces
     get:
@@ -205,9 +233,13 @@ paths:
                 required:
                   - workspaces
         '400':
-          $ref: '#/components/responses/SimpleError'
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/AuthError'
         '404':
           $ref: '#/components/responses/SimpleError'
+        5XX:
+          description: Unexpected Error
       tags:
         - Workspaces
   '/workspaces/{workspace_id}':
@@ -227,9 +259,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/Workspace'
         '400':
-          $ref: '#/components/responses/SimpleError'
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/AuthError'
         '404':
           $ref: '#/components/responses/SimpleError'
+        5XX:
+          description: Unexpected Error
       tags:
         - Workspaces
     put:
@@ -245,9 +281,13 @@ paths:
         '200':
           description: OK
         '400':
-          $ref: '#/components/responses/SimpleError'
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/AuthError'
         '404':
           $ref: '#/components/responses/SimpleError'
+        5XX:
+          description: Unexpected Error
       tags:
         - Workspaces
     delete:
@@ -258,9 +298,13 @@ paths:
         '204':
           description: No Content
         '400':
-          $ref: '#/components/responses/SimpleError'
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/AuthError'
         '404':
           $ref: '#/components/responses/SimpleError'
+        5XX:
+          description: Unexpected Error
       tags:
         - Workspaces
   '/workspaces/{workspace_id}/members':
@@ -280,9 +324,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/WorkspaceMembers'
         '400':
-          $ref: '#/components/responses/SimpleError'
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/AuthError'
         '404':
           $ref: '#/components/responses/SimpleError'
+        5XX:
+          description: Unexpected Error
       tags:
         - Workspaces
   '/workspaces/{workspace_id}/members/{user_id}':
@@ -310,9 +358,13 @@ paths:
         '204':
           description: No Content
         '400':
-          $ref: '#/components/responses/SimpleError'
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/AuthError'
         '404':
           $ref: '#/components/responses/SimpleError'
+        5XX:
+          description: Unexpected Error
       tags:
         - Workspaces
     delete:
@@ -323,9 +375,13 @@ paths:
         '204':
           description: No Content
         '400':
-          $ref: '#/components/responses/SimpleError'
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/AuthError'
         '404':
           $ref: '#/components/responses/SimpleError'
+        5XX:
+          description: Unexpected Error
       tags:
         - Workspaces
   '/workspaces/{workspace_id}/invites':
@@ -359,9 +415,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/WorkspaceInvite'
         '400':
-          $ref: '#/components/responses/SimpleError'
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/AuthError'
         '404':
           $ref: '#/components/responses/SimpleError'
+        5XX:
+          description: Unexpected Error
       tags:
         - Workspaces
   '/workspaces/{workspace_id}/invites/{invite_key}/accept':
@@ -379,9 +439,13 @@ paths:
         '204':
           description: OK
         '400':
-          $ref: '#/components/responses/SimpleError'
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/AuthError'
         '404':
           $ref: '#/components/responses/SimpleError'
+        5XX:
+          description: Unexpected Error
       tags:
         - Workspaces
   /dbs:
@@ -398,6 +462,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ListDatabasesResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/AuthError'
+        5XX:
+          description: Unexpected Error
       tags:
         - Database
   '/dbs/{db_name}':
@@ -417,9 +487,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/ListBranchesResponse'
         '400':
-          $ref: '#/components/responses/SimpleError'
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/AuthError'
         '404':
           $ref: '#/components/responses/SimpleError'
+        5XX:
+          description: Unexpected Error
       tags:
         - Branch
     put:
@@ -483,7 +557,11 @@ paths:
                 required:
                   - databaseName
         '400':
-          description: Bad Request
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/AuthError'
+        5XX:
+          description: Unexpected Error
       tags:
         - Database
     delete:
@@ -494,9 +572,13 @@ paths:
         '204':
           description: No Content
         '400':
-          $ref: '#/components/responses/SimpleError'
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/AuthError'
         '404':
           $ref: '#/components/responses/SimpleError'
+        5XX:
+          description: Unexpected Error
       tags:
         - Database
   '/db/{db_branch_name}':
@@ -518,9 +600,13 @@ paths:
                   branch:
                     $ref: '#/components/schemas/DBBranch'
         '400':
-          $ref: '#/components/responses/SimpleError'
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/AuthError'
         '404':
           $ref: '#/components/responses/SimpleError'
+        5XX:
+          description: Unexpected Error
       tags:
         - Branch
     put:
@@ -547,9 +633,13 @@ paths:
         '204':
           description: No Content
         '400':
-          $ref: '#/components/responses/SimpleError'
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/AuthError'
         '404':
           $ref: '#/components/responses/SimpleError'
+        5XX:
+          description: Unexpected Error
       tags:
         - Branch
     delete:
@@ -560,9 +650,13 @@ paths:
         '204':
           description: No Content
         '400':
-          $ref: '#/components/responses/SimpleError'
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/AuthError'
         '404':
           $ref: '#/components/responses/SimpleError'
+        5XX:
+          description: Unexpected Error
       tags:
         - Branch
   '/db/{db_branch_name}/metadata':
@@ -583,9 +677,13 @@ paths:
         '204':
           description: No Content
         '400':
-          $ref: '#/components/responses/SimpleError'
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/AuthError'
         '404':
           $ref: '#/components/responses/SimpleError'
+        5XX:
+          description: Unexpected Error
       tags:
         - Branch
     get:
@@ -599,9 +697,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/BranchMetadata'
         '400':
-          $ref: '#/components/responses/SimpleError'
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/AuthError'
         '404':
           $ref: '#/components/responses/SimpleError'
+        5XX:
+          description: Unexpected Error
       tags:
         - Branch
   '/db/{db_branch_name}/migrations':
@@ -637,9 +739,13 @@ paths:
                     items:
                       $ref: '#/components/schemas/BranchMigration'
         '400':
-          $ref: '#/components/responses/SimpleError'
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/AuthError'
         '404':
           $ref: '#/components/responses/SimpleError'
+        5XX:
+          description: Unexpected Error
       tags:
         - Branch
   '/db/{db_branch_name}/migrations/execute':
@@ -668,9 +774,13 @@ paths:
         '200':
           description: OK
         '400':
-          $ref: '#/components/responses/SimpleError'
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/AuthError'
         '404':
           $ref: '#/components/responses/SimpleError'
+        5XX:
+          description: Unexpected Error
       tags:
         - Branch
   '/db/{db_branch_name}/migrations/plan':
@@ -692,9 +802,13 @@ paths:
         '200':
           $ref: '#/components/responses/BranchMigrationPlan'
         '400':
-          $ref: '#/components/responses/SimpleError'
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/AuthError'
         '404':
           $ref: '#/components/responses/SimpleError'
+        5XX:
+          description: Unexpected Error
       tags:
         - Branch
   '/db/{db_branch_name}/stats':
@@ -744,8 +858,12 @@ paths:
                   - resolution
         '400':
           $ref: '#/components/responses/SimpleError'
+        '401':
+          $ref: '#/components/responses/AuthError'
         '404':
           $ref: '#/components/responses/SimpleError'
+        5XX:
+          description: Unexpected Error
       tags:
         - Branch
   '/db/{db_branch_name}/tables/{table_name}':
@@ -762,11 +880,15 @@ paths:
         '204':
           description: No Content
         '400':
-          $ref: '#/components/responses/SimpleError'
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/AuthError'
         '404':
           $ref: '#/components/responses/SimpleError'
         '422':
           $ref: '#/components/responses/SimpleError'
+        5XX:
+          description: Unexpected Error
       tags:
         - Table
     delete:
@@ -777,9 +899,13 @@ paths:
         '204':
           description: No Content
         '400':
-          $ref: '#/components/responses/SimpleError'
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/AuthError'
         '404':
           description: Not Found
+        5XX:
+          description: Unexpected Error
       tags:
         - Table
     patch:
@@ -813,9 +939,13 @@ paths:
         '204':
           description: No Content
         '400':
-          $ref: '#/components/responses/SimpleError'
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/AuthError'
         '404':
           $ref: '#/components/responses/SimpleError'
+        5XX:
+          description: Unexpected Error
       tags:
         - Table
   '/db/{db_branch_name}/tables/{table_name}/schema':
@@ -842,9 +972,13 @@ paths:
                 required:
                   - columns
         '400':
-          $ref: '#/components/responses/SimpleError'
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/AuthError'
         '404':
           $ref: '#/components/responses/SimpleError'
+        5XX:
+          description: Unexpected Error
       tags:
         - Table
     put:
@@ -866,11 +1000,15 @@ paths:
         '204':
           description: No Content
         '400':
-          $ref: '#/components/responses/SimpleError'
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/AuthError'
         '404':
           $ref: '#/components/responses/SimpleError'
         '409':
           $ref: '#/components/responses/SimpleError'
+        5XX:
+          description: Unexpected Error
       tags:
         - Table
   '/db/{db_branch_name}/tables/{table_name}/columns':
@@ -910,11 +1048,13 @@ paths:
                 required:
                   - columns
         '400':
-          $ref: '#/components/responses/SimpleError'
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/AuthError'
         '404':
           $ref: '#/components/responses/SimpleError'
-        '500':
-          description: Internal Server Error
+        5XX:
+          description: Unexpected Error
       tags:
         - Table
     post:
@@ -942,9 +1082,13 @@ paths:
         '200':
           $ref: '#/components/responses/MigrationIdResponse'
         '400':
-          $ref: '#/components/responses/SimpleError'
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/AuthError'
         '404':
           $ref: '#/components/responses/SimpleError'
+        5XX:
+          description: Unexpected Error
       tags:
         - Table
   '/db/{db_branch_name}/tables/{table_name}/columns/{column_name}':
@@ -970,11 +1114,13 @@ paths:
                     type: multiple
                 $ref: '#/components/schemas/Column'
         '400':
-          $ref: '#/components/responses/SimpleError'
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/AuthError'
         '404':
           $ref: '#/components/responses/SimpleError'
-        '500':
-          description: Internal Server Error
+        5XX:
+          description: Unexpected Error
       tags:
         - Table
     delete:
@@ -985,9 +1131,13 @@ paths:
         '200':
           $ref: '#/components/responses/MigrationIdResponse'
         '400':
-          $ref: '#/components/responses/SimpleError'
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/AuthError'
         '404':
           $ref: '#/components/responses/SimpleError'
+        5XX:
+          description: Unexpected Error
       tags:
         - Table
     patch:
@@ -1018,9 +1168,13 @@ paths:
         '200':
           $ref: '#/components/responses/MigrationIdResponse'
         '400':
-          $ref: '#/components/responses/SimpleError'
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/AuthError'
         '404':
           $ref: '#/components/responses/SimpleError'
+        5XX:
+          description: Unexpected Error
       tags:
         - Table
   '/db/{db_branch_name}/tables/{table_name}/data':
@@ -1046,14 +1200,26 @@ paths:
               schema:
                 type: object
                 properties:
-                  _id:
+                  id:
                     type: string
-                  _version:
-                    type: integer
+                  xata:
+                    type: object
+                    properties:
+                      version:
+                        type: integer
+                    required:
+                      - version
+                required:
+                  - id
+                  - xata
         '400':
-          $ref: '#/components/responses/SimpleError'
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/AuthError'
         '404':
           $ref: '#/components/responses/SimpleError'
+        5XX:
+          description: Unexpected Error
       tags:
         - Records
   '/db/{db_branch_name}/tables/{table_name}/data/{record_id}':
@@ -1088,16 +1254,28 @@ paths:
               schema:
                 type: object
                 properties:
-                  _id:
+                  id:
                     type: string
-                  _version:
-                    type: integer
+                  xata:
+                    type: object
+                    properties:
+                      version:
+                        type: integer
+                    required:
+                      - version
+                required:
+                  - id
+                  - xata
         '400':
-          $ref: '#/components/responses/SimpleError'
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/AuthError'
         '404':
           $ref: '#/components/responses/SimpleError'
         '422':
           $ref: '#/components/responses/SimpleError'
+        5XX:
+          description: Unexpected Error
       tags:
         - Records
     delete:
@@ -1107,9 +1285,13 @@ paths:
         '204':
           description: No Content
         '400':
-          $ref: '#/components/responses/SimpleError'
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/AuthError'
         '404':
           $ref: '#/components/responses/SimpleError'
+        5XX:
+          description: Unexpected Error
       tags:
         - Records
     get:
@@ -1132,9 +1314,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/Record'
         '400':
-          $ref: '#/components/responses/SimpleError'
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/AuthError'
         '404':
           $ref: '#/components/responses/SimpleError'
+        5XX:
+          description: Unexpected Error
       tags:
         - Records
   '/db/{db_branch_name}/tables/{table_name}/bulk':
@@ -1193,8 +1379,12 @@ paths:
                         - status
                 required:
                   - errors
+        '401':
+          $ref: '#/components/responses/AuthError'
         '404':
           $ref: '#/components/responses/SimpleError'
+        5XX:
+          description: Unexpected Error
       tags:
         - Records
       x-experimental: true
@@ -1341,8 +1531,10 @@ paths:
             "zipcode": 10407
           },
           "team": {
-            "_id": "XX",
-            "_version": 0,
+            "id": "XX",
+            "xata": {
+              "version": 0,
+            },
             "name": "first team"
           }
         }
@@ -1371,8 +1563,10 @@ paths:
             "zipcode": 10407
           },
           "team": {
-            "_id": "XX",
-            "_version": 0,
+            "id": "XX",
+            "xata": {
+              "version": 0,
+            },
             "name": "first team",
             "code": "A1"
           }
@@ -1850,9 +2044,13 @@ paths:
         '200':
           $ref: '#/components/responses/QueryResponse'
         '400':
-          $ref: '#/components/responses/SimpleError'
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/AuthError'
         '404':
           $ref: '#/components/responses/SimpleError'
+        5XX:
+          description: Unexpected Error
       tags:
         - Records
 components:
@@ -1924,7 +2122,7 @@ components:
   schemas:
     APIKeyName:
       type: string
-      pattern: '^[a-zA-Z0-9][a-zA-Z0-9_\-~]*'
+      pattern: '[a-zA-Z0-9_\-~]*'
       title: APIKeyName
     Branch:
       type: object
@@ -2003,7 +2201,7 @@ components:
       title: Migration
     BranchName:
       type: string
-      pattern: '^[a-zA-Z0-9][a-zA-Z0-9_\-~]*'
+      pattern: '[a-zA-Z0-9_\-~]+'
       title: BranchName
     Column:
       type: object
@@ -2055,7 +2253,7 @@ components:
       title: ColumnMigration
     ColumnName:
       type: string
-      pattern: '^[a-zA-Z0-9][a-zA-Z0-9_\-~\.]*'
+      pattern: '[a-zA-Z0-9_\-~\.]+'
       title: ColumnName
     ColumnsFilter:
       type: array
@@ -2095,11 +2293,11 @@ components:
       description: |
         The DBBranchName matches the pattern `{db_name}:{branch_name}`.
       type: string
-      pattern: '^[a-zA-Z0-9][a-zA-Z0-9_\-~]*:[a-zA-Z0-9][a-zA-Z0-9_\-~]*'
+      pattern: '[a-zA-Z0-9_\-~]+:[a-zA-Z0-9_\-~]+'
       title: DBBranchName
     DBName:
       type: string
-      pattern: '^[a-zA-Z0-9][a-zA-Z0-9_\-~]*'
+      pattern: '[a-zA-Z0-9_\-~]+'
       title: DBName
     DateTime:
       type: string
@@ -2238,7 +2436,7 @@ components:
         - type: boolean
     InviteID:
       type: string
-      pattern: '^[a-zA-Z0-9]+'
+      pattern: '[a-zA-Z0-9]+'
       title: InviteID
     InviteKey:
       type: string
@@ -2339,27 +2537,32 @@ components:
       description: Xata Table Record
       type: object
       properties:
-        _id:
+        id:
           $ref: '#/components/schemas/RecordID'
-        _version:
-          description: The record's version. Can be used for optimistic concurrency control.
-          type: integer
-        _table:
-          description: The record's table name. APIs that return records from multiple tables will set _table accordingly.
-          type: string
-        _warnings:
-          description: Encoding/Decoding errors
-          type: array
-          items:
-            type: string
+        xata:
+          type: object
+          properties:
+            version:
+              description: The record's version. Can be used for optimistic concurrency control.
+              type: integer
+            table:
+              description: The record's table name. APIs that return records from multiple tables will set _table accordingly.
+              type: string
+            warnings:
+              description: Encoding/Decoding errors
+              type: array
+              items:
+                type: string
+          required:
+            - version
       additionalProperties: true
       required:
-        - _id
-        - _version
+        - id
+        - xata
       title: Record
     RecordID:
       type: string
-      pattern: '^[a-zA-Z0-9][a-zA-Z0-9_-~:]*'
+      pattern: '[a-zA-Z0-9_-~:]+'
       title: RecordID
     RecordsMetadata:
       description: Records metadata
@@ -2490,7 +2693,7 @@ components:
       title: TableMigration
     TableName:
       type: string
-      pattern: '^[a-zA-Z0-9][a-zA-Z0-9_\-~]*'
+      pattern: '[a-zA-Z0-9_\-~]+'
       title: TableName
     TableRename:
       description: ''
@@ -2524,7 +2727,7 @@ components:
         - image
     UserID:
       type: string
-      pattern: '^[a-zA-Z0-9][a-zA-Z0-9_-~:]*'
+      pattern: '[a-zA-Z0-9_-~:]+'
       title: UserID
     UserWithID:
       allOf:
@@ -2616,6 +2819,41 @@ components:
         - name
         - slug
   responses:
+    AuthError:
+      description: Authentication Error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              id:
+                type: string
+              message:
+                type: string
+              status:
+                type: integer
+            example:
+              status: 401
+              message: invalid API key
+            required:
+              - status
+              - message
+    BadRequestError:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              id:
+                type: string
+              message:
+                type: string
+              status:
+                type: integer
+            required:
+              - status
+              - message
     BranchMigrationPlan:
       description: Example response
       content:

@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"github.com/xata/cli/client"
+	"github.com/xata/cli/client/spec"
 	"github.com/xata/cli/config"
 
 	"github.com/TylerBrock/colorjson"
@@ -30,6 +31,26 @@ func getDirectoryName() (string, error) {
 	return path.Base(dir), nil
 }
 
+func checkWorkspacesResponse(workspaces *spec.GetWorkspacesListResponse) error {
+	if workspaces.JSON401 != nil {
+		return ErrorUnauthorized{message: workspaces.JSON401.Message}
+	}
+	if workspaces.JSON400 != nil {
+		return fmt.Errorf("Error getting workspaces: %s", workspaces.JSON400.Message)
+	}
+	if workspaces.JSON404 != nil {
+		return fmt.Errorf("Error getting workspaces: %s", workspaces.JSON404.Message)
+	}
+
+	if workspaces.StatusCode() != http.StatusOK {
+		return fmt.Errorf("Error getting workspaces: %s", workspaces.Status())
+	}
+	if workspaces.JSON200 == nil {
+		return fmt.Errorf("Error getting workspaces: 200 OK unexpected response body")
+	}
+	return nil
+}
+
 func getWorkspaces(c *cli.Context) ([]string, error) {
 	apiKey, err := config.APIKey(c)
 	if err != nil {
@@ -44,8 +65,8 @@ func getWorkspaces(c *cli.Context) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	if workspaces.StatusCode() != http.StatusOK {
-		return nil, fmt.Errorf("error getting workspaces: %s", workspaces.Status())
+	if err = checkWorkspacesResponse(workspaces); err != nil {
+		return nil, err
 	}
 
 	res := make([]string, 0, len(workspaces.JSON200.Workspaces))
@@ -124,9 +145,19 @@ func GitHasLocalChanges(filename string) (bool, error) {
 	return false, nil
 }
 
+func getMessage(bytes []byte) string {
+	var resp struct {
+		Message string `json:"message"`
+	}
+	if err := json.Unmarshal(bytes, &resp); err != nil {
+		return string(bytes)
+	}
+	return resp.Message
+}
+
 func printResponse(c *cli.Context, resp *http.Response, err error) error {
 	if err != nil {
-		return fmt.Errorf("sending request: %s\n", err)
+		return fmt.Errorf("Sending request: %s\n", err)
 	}
 	defer resp.Body.Close()
 	bodyBytes, err := io.ReadAll(resp.Body)
@@ -134,7 +165,10 @@ func printResponse(c *cli.Context, resp *http.Response, err error) error {
 		return err
 	}
 	if resp.StatusCode > 299 {
-		return fmt.Errorf("error code %d: %s", resp.StatusCode, string(bodyBytes))
+		if resp.StatusCode == http.StatusUnauthorized {
+			return ErrorUnauthorized{message: getMessage(bodyBytes)}
+		}
+		return fmt.Errorf("Error from server: status %d: %s", resp.StatusCode, getMessage(bodyBytes))
 	}
 
 	if len(bodyBytes) == 0 {

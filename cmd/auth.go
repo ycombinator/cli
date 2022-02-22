@@ -2,8 +2,10 @@ package cmd
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/AlecAivazis/survey/v2"
@@ -156,11 +158,37 @@ func verifyAPIKeyValid(ctx context.Context, apiKey string) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusUnauthorized {
-		return errors.New("Error accessing the API: Unauthorized")
+		return ErrorUnauthorized{message: getMessageFromHTTPResponse(resp)}
 	}
 	if resp.StatusCode >= 299 {
 		return fmt.Errorf("error: %s\n", resp.Status)
 	}
 	fmt.Println("OK")
 	return nil
+}
+
+func getMessageFromHTTPResponse(resp *http.Response) string {
+	if resp == nil {
+		return ""
+	}
+
+	if resp.Body == nil {
+		return ""
+	}
+
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return ""
+	}
+
+	var response struct {
+		Message string `json:"message"`
+	}
+	err = json.Unmarshal(body, &response)
+	if err != nil || len(response.Message) == 0 {
+		return string(body)
+	}
+
+	return response.Message
 }

@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/xata/cli/client"
@@ -114,6 +115,26 @@ func PrintMigration(migration spec.BranchMigration) {
 	}
 }
 
+func checkHistoryResponse(history *spec.GetBranchMigrationHistoryResponse) error {
+	if history.JSON401 != nil {
+		return ErrorUnauthorized{message: history.JSON401.Message}
+	}
+	if history.JSON400 != nil {
+		return fmt.Errorf("Error getting history: %s", history.JSON400.Message)
+	}
+	if history.JSON404 != nil {
+		return fmt.Errorf("Error getting history: %s", history.JSON404.Message)
+	}
+
+	if history.StatusCode() != http.StatusOK {
+		return fmt.Errorf("Error getting history: %s", history.Status())
+	}
+	if history.JSON200 == nil {
+		return fmt.Errorf("Error getting history: 200 OK unexpected response body")
+	}
+	return nil
+}
+
 func printHistory(ctx context.Context, client *spec.ClientWithResponses, dbName, branchName, startFromID string, follow bool) error {
 	startFrom := startFromID
 	var originBase *spec.StartedFromMetadata
@@ -127,9 +148,9 @@ func printHistory(ctx context.Context, client *spec.ClientWithResponses, dbName,
 		if err != nil {
 			return fmt.Errorf("Error getting migrations: %w", err)
 		}
-
-		if history.StatusCode() > 299 {
-			return fmt.Errorf("getting history: %s", history.Status())
+		err = checkHistoryResponse(history)
+		if err != nil {
+			return err
 		}
 
 		migrations := *history.JSON200.Migrations

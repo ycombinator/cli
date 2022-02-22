@@ -239,16 +239,17 @@ type PageConfig struct {
 
 // Xata Table Record
 type Record struct {
-	Id RecordID `json:"_id"`
+	Id   RecordID `json:"id"`
+	Xata struct {
+		// The record's table name. APIs that return records from multiple tables will set _table accordingly.
+		Table *string `json:"table,omitempty"`
 
-	// The record's table name. APIs that return records from multiple tables will set _table accordingly.
-	Table *string `json:"_table,omitempty"`
+		// The record's version. Can be used for optimistic concurrency control.
+		Version int `json:"version"`
 
-	// The record's version. Can be used for optimistic concurrency control.
-	Version int `json:"_version"`
-
-	// Encoding/Decoding errors
-	Warnings             *[]string              `json:"_warnings,omitempty"`
+		// Encoding/Decoding errors
+		Warnings *[]string `json:"warnings,omitempty"`
+	} `json:"xata"`
 	AdditionalProperties map[string]interface{} `json:"-"`
 }
 
@@ -398,6 +399,20 @@ type UserIDParam UserID
 
 // WorkspaceIDParam defines model for WorkspaceIDParam.
 type WorkspaceIDParam WorkspaceID
+
+// AuthError defines model for AuthError.
+type AuthError struct {
+	Id      *string `json:"id,omitempty"`
+	Message string  `json:"message"`
+	Status  int     `json:"status"`
+}
+
+// BadRequestError defines model for BadRequestError.
+type BadRequestError struct {
+	Id      *string `json:"id,omitempty"`
+	Message string  `json:"message"`
+	Status  int     `json:"status"`
+}
 
 // BranchMigrationPlan defines model for BranchMigrationPlan.
 type BranchMigrationPlan struct {
@@ -869,36 +884,20 @@ func (a *Record) UnmarshalJSON(b []byte) error {
 		return err
 	}
 
-	if raw, found := object["_id"]; found {
+	if raw, found := object["id"]; found {
 		err = json.Unmarshal(raw, &a.Id)
 		if err != nil {
-			return fmt.Errorf("error reading '_id': %w", err)
+			return fmt.Errorf("error reading 'id': %w", err)
 		}
-		delete(object, "_id")
+		delete(object, "id")
 	}
 
-	if raw, found := object["_table"]; found {
-		err = json.Unmarshal(raw, &a.Table)
+	if raw, found := object["xata"]; found {
+		err = json.Unmarshal(raw, &a.Xata)
 		if err != nil {
-			return fmt.Errorf("error reading '_table': %w", err)
+			return fmt.Errorf("error reading 'xata': %w", err)
 		}
-		delete(object, "_table")
-	}
-
-	if raw, found := object["_version"]; found {
-		err = json.Unmarshal(raw, &a.Version)
-		if err != nil {
-			return fmt.Errorf("error reading '_version': %w", err)
-		}
-		delete(object, "_version")
-	}
-
-	if raw, found := object["_warnings"]; found {
-		err = json.Unmarshal(raw, &a.Warnings)
-		if err != nil {
-			return fmt.Errorf("error reading '_warnings': %w", err)
-		}
-		delete(object, "_warnings")
+		delete(object, "xata")
 	}
 
 	if len(object) != 0 {
@@ -920,28 +919,14 @@ func (a Record) MarshalJSON() ([]byte, error) {
 	var err error
 	object := make(map[string]json.RawMessage)
 
-	object["_id"], err = json.Marshal(a.Id)
+	object["id"], err = json.Marshal(a.Id)
 	if err != nil {
-		return nil, fmt.Errorf("error marshaling '_id': %w", err)
+		return nil, fmt.Errorf("error marshaling 'id': %w", err)
 	}
 
-	if a.Table != nil {
-		object["_table"], err = json.Marshal(a.Table)
-		if err != nil {
-			return nil, fmt.Errorf("error marshaling '_table': %w", err)
-		}
-	}
-
-	object["_version"], err = json.Marshal(a.Version)
+	object["xata"], err = json.Marshal(a.Xata)
 	if err != nil {
-		return nil, fmt.Errorf("error marshaling '_version': %w", err)
-	}
-
-	if a.Warnings != nil {
-		object["_warnings"], err = json.Marshal(a.Warnings)
-		if err != nil {
-			return nil, fmt.Errorf("error marshaling '_warnings': %w", err)
-		}
+		return nil, fmt.Errorf("error marshaling 'xata': %w", err)
 	}
 
 	for fieldName, field := range a.AdditionalProperties {
@@ -4234,6 +4219,11 @@ type DeleteBranchResponse struct {
 		Message string  `json:"message"`
 		Status  int     `json:"status"`
 	}
+	JSON401 *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+		Status  int     `json:"status"`
+	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
@@ -4268,6 +4258,11 @@ type GetBranchDetailsResponse struct {
 		Message string  `json:"message"`
 		Status  int     `json:"status"`
 	}
+	JSON401 *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+		Status  int     `json:"status"`
+	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
@@ -4295,6 +4290,11 @@ type CreateBranchResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON400      *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+		Status  int     `json:"status"`
+	}
+	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
 		Status  int     `json:"status"`
@@ -4331,6 +4331,11 @@ type GetBranchMetadataResponse struct {
 		Message string  `json:"message"`
 		Status  int     `json:"status"`
 	}
+	JSON401 *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+		Status  int     `json:"status"`
+	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
@@ -4358,6 +4363,11 @@ type UpdateBranchMetadataResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON400      *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+		Status  int     `json:"status"`
+	}
+	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
 		Status  int     `json:"status"`
@@ -4397,6 +4407,11 @@ type GetBranchMigrationHistoryResponse struct {
 		Message string  `json:"message"`
 		Status  int     `json:"status"`
 	}
+	JSON401 *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+		Status  int     `json:"status"`
+	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
@@ -4424,6 +4439,11 @@ type ExecuteBranchMigrationPlanResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON400      *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+		Status  int     `json:"status"`
+	}
+	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
 		Status  int     `json:"status"`
@@ -4459,6 +4479,11 @@ type GetBranchMigrationPlanResponse struct {
 		Version   int             `json:"version"`
 	}
 	JSON400 *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+		Status  int     `json:"status"`
+	}
+	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
 		Status  int     `json:"status"`
@@ -4505,6 +4530,11 @@ type GetBranchStatsResponse struct {
 		Message string  `json:"message"`
 		Status  int     `json:"status"`
 	}
+	JSON401 *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+		Status  int     `json:"status"`
+	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
@@ -4536,6 +4566,11 @@ type DeleteTableResponse struct {
 		Message string  `json:"message"`
 		Status  int     `json:"status"`
 	}
+	JSON401 *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+		Status  int     `json:"status"`
+	}
 }
 
 // Status returns HTTPResponse.Status
@@ -4558,6 +4593,11 @@ type UpdateTableResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON400      *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+		Status  int     `json:"status"`
+	}
+	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
 		Status  int     `json:"status"`
@@ -4589,6 +4629,11 @@ type CreateTableResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON400      *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+		Status  int     `json:"status"`
+	}
+	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
 		Status  int     `json:"status"`
@@ -4633,6 +4678,11 @@ type BulkInsertTableRecordsResponse struct {
 			Status  int     `json:"status"`
 		} `json:"errors"`
 	}
+	JSON401 *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+		Status  int     `json:"status"`
+	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
@@ -4663,6 +4713,11 @@ type GetTableColumnsResponse struct {
 		Columns []Column `json:"columns"`
 	}
 	JSON400 *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+		Status  int     `json:"status"`
+	}
+	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
 		Status  int     `json:"status"`
@@ -4701,6 +4756,11 @@ type AddTableColumnResponse struct {
 		Message string  `json:"message"`
 		Status  int     `json:"status"`
 	}
+	JSON401 *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+		Status  int     `json:"status"`
+	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
@@ -4735,6 +4795,11 @@ type DeleteColumnResponse struct {
 		Message string  `json:"message"`
 		Status  int     `json:"status"`
 	}
+	JSON401 *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+		Status  int     `json:"status"`
+	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
@@ -4763,6 +4828,11 @@ type GetColumnResponse struct {
 	HTTPResponse *http.Response
 	JSON200      *Column
 	JSON400      *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+		Status  int     `json:"status"`
+	}
+	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
 		Status  int     `json:"status"`
@@ -4801,6 +4871,11 @@ type UpdateColumnResponse struct {
 		Message string  `json:"message"`
 		Status  int     `json:"status"`
 	}
+	JSON401 *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+		Status  int     `json:"status"`
+	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
@@ -4828,10 +4903,17 @@ type InsertRecordResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON201      *struct {
-		Id      *string `json:"_id,omitempty"`
-		Version *int    `json:"_version,omitempty"`
+		Id   string `json:"id"`
+		Xata struct {
+			Version int `json:"version"`
+		} `json:"xata"`
 	}
 	JSON400 *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+		Status  int     `json:"status"`
+	}
+	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
 		Status  int     `json:"status"`
@@ -4863,6 +4945,11 @@ type DeleteRecordResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON400      *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+		Status  int     `json:"status"`
+	}
+	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
 		Status  int     `json:"status"`
@@ -4899,6 +4986,11 @@ type GetRecordResponse struct {
 		Message string  `json:"message"`
 		Status  int     `json:"status"`
 	}
+	JSON401 *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+		Status  int     `json:"status"`
+	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
@@ -4926,10 +5018,17 @@ type InsertRecordWithIDResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON201      *struct {
-		Id      *string `json:"_id,omitempty"`
-		Version *int    `json:"_version,omitempty"`
+		Id   string `json:"id"`
+		Xata struct {
+			Version int `json:"version"`
+		} `json:"xata"`
 	}
 	JSON400 *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+		Status  int     `json:"status"`
+	}
+	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
 		Status  int     `json:"status"`
@@ -4975,6 +5074,11 @@ type QueryTableResponse struct {
 		Message string  `json:"message"`
 		Status  int     `json:"status"`
 	}
+	JSON401 *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+		Status  int     `json:"status"`
+	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
@@ -5009,6 +5113,11 @@ type GetTableSchemaResponse struct {
 		Message string  `json:"message"`
 		Status  int     `json:"status"`
 	}
+	JSON401 *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+		Status  int     `json:"status"`
+	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
@@ -5036,6 +5145,11 @@ type SetTableSchemaResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON400      *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+		Status  int     `json:"status"`
+	}
+	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
 		Status  int     `json:"status"`
@@ -5072,6 +5186,16 @@ type GetDatabaseListResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ListDatabasesResponse
+	JSON400      *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+		Status  int     `json:"status"`
+	}
+	JSON401 *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+		Status  int     `json:"status"`
+	}
 }
 
 // Status returns HTTPResponse.Status
@@ -5094,6 +5218,11 @@ type DeleteDatabaseResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON400      *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+		Status  int     `json:"status"`
+	}
+	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
 		Status  int     `json:"status"`
@@ -5130,6 +5259,11 @@ type GetBranchListResponse struct {
 		Message string  `json:"message"`
 		Status  int     `json:"status"`
 	}
+	JSON401 *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+		Status  int     `json:"status"`
+	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
@@ -5160,6 +5294,16 @@ type CreateDatabaseResponse struct {
 		BranchName   *string `json:"branchName,omitempty"`
 		DatabaseName string  `json:"databaseName"`
 	}
+	JSON400 *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+		Status  int     `json:"status"`
+	}
+	JSON401 *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+		Status  int     `json:"status"`
+	}
 }
 
 // Status returns HTTPResponse.Status
@@ -5182,6 +5326,11 @@ type DeleteUserResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON400      *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+		Status  int     `json:"status"`
+	}
+	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
 		Status  int     `json:"status"`
@@ -5218,6 +5367,11 @@ type GetUserResponse struct {
 		Message string  `json:"message"`
 		Status  int     `json:"status"`
 	}
+	JSON401 *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+		Status  int     `json:"status"`
+	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
@@ -5246,6 +5400,11 @@ type UpdateUserResponse struct {
 	HTTPResponse *http.Response
 	JSON200      *UserWithID
 	JSON400      *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+		Status  int     `json:"status"`
+	}
+	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
 		Status  int     `json:"status"`
@@ -5287,6 +5446,11 @@ type GetUserAPIKeysResponse struct {
 		Message string  `json:"message"`
 		Status  int     `json:"status"`
 	}
+	JSON401 *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+		Status  int     `json:"status"`
+	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
@@ -5314,6 +5478,11 @@ type DeleteUserAPIKeyResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON400      *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+		Status  int     `json:"status"`
+	}
+	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
 		Status  int     `json:"status"`
@@ -5350,6 +5519,11 @@ type CreateUserAPIKeyResponse struct {
 		Name      string   `json:"name"`
 	}
 	JSON400 *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+		Status  int     `json:"status"`
+	}
+	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
 		Status  int     `json:"status"`
@@ -5393,6 +5567,11 @@ type GetWorkspacesListResponse struct {
 		Message string  `json:"message"`
 		Status  int     `json:"status"`
 	}
+	JSON401 *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+		Status  int     `json:"status"`
+	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
@@ -5425,6 +5604,11 @@ type CreateWorkspaceResponse struct {
 		Message string  `json:"message"`
 		Status  int     `json:"status"`
 	}
+	JSON401 *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+		Status  int     `json:"status"`
+	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
@@ -5452,6 +5636,11 @@ type DeleteWorkspaceResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON400      *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+		Status  int     `json:"status"`
+	}
+	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
 		Status  int     `json:"status"`
@@ -5488,6 +5677,11 @@ type GetWorkspaceResponse struct {
 		Message string  `json:"message"`
 		Status  int     `json:"status"`
 	}
+	JSON401 *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+		Status  int     `json:"status"`
+	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
@@ -5515,6 +5709,11 @@ type UpdateWorkspaceResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON400      *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+		Status  int     `json:"status"`
+	}
+	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
 		Status  int     `json:"status"`
@@ -5551,6 +5750,11 @@ type InviteWorkspaceMemberResponse struct {
 		Message string  `json:"message"`
 		Status  int     `json:"status"`
 	}
+	JSON401 *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+		Status  int     `json:"status"`
+	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
@@ -5578,6 +5782,11 @@ type AcceptWorkspaceMemberInviteResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON400      *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+		Status  int     `json:"status"`
+	}
+	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
 		Status  int     `json:"status"`
@@ -5614,6 +5823,11 @@ type GetWorkspaceMembersListResponse struct {
 		Message string  `json:"message"`
 		Status  int     `json:"status"`
 	}
+	JSON401 *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+		Status  int     `json:"status"`
+	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
@@ -5645,6 +5859,11 @@ type RemoveWorkspaceMemberResponse struct {
 		Message string  `json:"message"`
 		Status  int     `json:"status"`
 	}
+	JSON401 *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+		Status  int     `json:"status"`
+	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
@@ -5672,6 +5891,11 @@ type UpdateWorkspaceMemberRoleResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON400      *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+		Status  int     `json:"status"`
+	}
+	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
 		Status  int     `json:"status"`
@@ -6289,6 +6513,17 @@ func ParseDeleteBranchResponse(rsp *http.Response) (*DeleteBranchResponse, error
 		}
 		response.JSON400 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+			Status  int     `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
@@ -6339,6 +6574,17 @@ func ParseGetBranchDetailsResponse(rsp *http.Response) (*GetBranchDetailsRespons
 		}
 		response.JSON400 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+			Status  int     `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
@@ -6379,6 +6625,17 @@ func ParseCreateBranchResponse(rsp *http.Response) (*CreateBranchResponse, error
 			return nil, err
 		}
 		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+			Status  int     `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest struct {
@@ -6428,6 +6685,17 @@ func ParseGetBranchMetadataResponse(rsp *http.Response) (*GetBranchMetadataRespo
 		}
 		response.JSON400 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+			Status  int     `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
@@ -6468,6 +6736,17 @@ func ParseUpdateBranchMetadataResponse(rsp *http.Response) (*UpdateBranchMetadat
 			return nil, err
 		}
 		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+			Status  int     `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest struct {
@@ -6520,6 +6799,17 @@ func ParseGetBranchMigrationHistoryResponse(rsp *http.Response) (*GetBranchMigra
 		}
 		response.JSON400 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+			Status  int     `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
@@ -6560,6 +6850,17 @@ func ParseExecuteBranchMigrationPlanResponse(rsp *http.Response) (*ExecuteBranch
 			return nil, err
 		}
 		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+			Status  int     `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest struct {
@@ -6611,6 +6912,17 @@ func ParseGetBranchMigrationPlanResponse(rsp *http.Response) (*GetBranchMigratio
 			return nil, err
 		}
 		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+			Status  int     `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest struct {
@@ -6670,6 +6982,17 @@ func ParseGetBranchStatsResponse(rsp *http.Response) (*GetBranchStatsResponse, e
 		}
 		response.JSON400 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+			Status  int     `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
@@ -6711,6 +7034,17 @@ func ParseDeleteTableResponse(rsp *http.Response) (*DeleteTableResponse, error) 
 		}
 		response.JSON400 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+			Status  int     `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
 	}
 
 	return response, nil
@@ -6740,6 +7074,17 @@ func ParseUpdateTableResponse(rsp *http.Response) (*UpdateTableResponse, error) 
 			return nil, err
 		}
 		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+			Status  int     `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest struct {
@@ -6781,6 +7126,17 @@ func ParseCreateTableResponse(rsp *http.Response) (*CreateTableResponse, error) 
 			return nil, err
 		}
 		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+			Status  int     `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest struct {
@@ -6844,6 +7200,17 @@ func ParseBulkInsertTableRecordsResponse(rsp *http.Response) (*BulkInsertTableRe
 		}
 		response.JSON400 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+			Status  int     `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
@@ -6893,6 +7260,17 @@ func ParseGetTableColumnsResponse(rsp *http.Response) (*GetTableColumnsResponse,
 			return nil, err
 		}
 		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+			Status  int     `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest struct {
@@ -6944,6 +7322,17 @@ func ParseAddTableColumnResponse(rsp *http.Response) (*AddTableColumnResponse, e
 		}
 		response.JSON400 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+			Status  int     `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
@@ -6994,6 +7383,17 @@ func ParseDeleteColumnResponse(rsp *http.Response) (*DeleteColumnResponse, error
 		}
 		response.JSON400 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+			Status  int     `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
@@ -7041,6 +7441,17 @@ func ParseGetColumnResponse(rsp *http.Response) (*GetColumnResponse, error) {
 			return nil, err
 		}
 		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+			Status  int     `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest struct {
@@ -7092,6 +7503,17 @@ func ParseUpdateColumnResponse(rsp *http.Response) (*UpdateColumnResponse, error
 		}
 		response.JSON400 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+			Status  int     `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
@@ -7124,8 +7546,10 @@ func ParseInsertRecordResponse(rsp *http.Response) (*InsertRecordResponse, error
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
 		var dest struct {
-			Id      *string `json:"_id,omitempty"`
-			Version *int    `json:"_version,omitempty"`
+			Id   string `json:"id"`
+			Xata struct {
+				Version int `json:"version"`
+			} `json:"xata"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7142,6 +7566,17 @@ func ParseInsertRecordResponse(rsp *http.Response) (*InsertRecordResponse, error
 			return nil, err
 		}
 		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+			Status  int     `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest struct {
@@ -7183,6 +7618,17 @@ func ParseDeleteRecordResponse(rsp *http.Response) (*DeleteRecordResponse, error
 			return nil, err
 		}
 		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+			Status  int     `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest struct {
@@ -7232,6 +7678,17 @@ func ParseGetRecordResponse(rsp *http.Response) (*GetRecordResponse, error) {
 		}
 		response.JSON400 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+			Status  int     `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
@@ -7264,8 +7721,10 @@ func ParseInsertRecordWithIDResponse(rsp *http.Response) (*InsertRecordWithIDRes
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
 		var dest struct {
-			Id      *string `json:"_id,omitempty"`
-			Version *int    `json:"_version,omitempty"`
+			Id   string `json:"id"`
+			Xata struct {
+				Version int `json:"version"`
+			} `json:"xata"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7282,6 +7741,17 @@ func ParseInsertRecordWithIDResponse(rsp *http.Response) (*InsertRecordWithIDRes
 			return nil, err
 		}
 		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+			Status  int     `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest struct {
@@ -7346,6 +7816,17 @@ func ParseQueryTableResponse(rsp *http.Response) (*QueryTableResponse, error) {
 		}
 		response.JSON400 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+			Status  int     `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
@@ -7396,6 +7877,17 @@ func ParseGetTableSchemaResponse(rsp *http.Response) (*GetTableSchemaResponse, e
 		}
 		response.JSON400 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+			Status  int     `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
@@ -7436,6 +7928,17 @@ func ParseSetTableSchemaResponse(rsp *http.Response) (*SetTableSchemaResponse, e
 			return nil, err
 		}
 		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+			Status  int     `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest struct {
@@ -7485,6 +7988,28 @@ func ParseGetDatabaseListResponse(rsp *http.Response) (*GetDatabaseListResponse,
 		}
 		response.JSON200 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+			Status  int     `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+			Status  int     `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
 	}
 
 	return response, nil
@@ -7514,6 +8039,17 @@ func ParseDeleteDatabaseResponse(rsp *http.Response) (*DeleteDatabaseResponse, e
 			return nil, err
 		}
 		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+			Status  int     `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest struct {
@@ -7563,6 +8099,17 @@ func ParseGetBranchListResponse(rsp *http.Response) (*GetBranchListResponse, err
 		}
 		response.JSON400 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+			Status  int     `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
@@ -7603,6 +8150,28 @@ func ParseCreateDatabaseResponse(rsp *http.Response) (*CreateDatabaseResponse, e
 		}
 		response.JSON201 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+			Status  int     `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+			Status  int     `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
 	}
 
 	return response, nil
@@ -7632,6 +8201,17 @@ func ParseDeleteUserResponse(rsp *http.Response) (*DeleteUserResponse, error) {
 			return nil, err
 		}
 		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+			Status  int     `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest struct {
@@ -7681,6 +8261,17 @@ func ParseGetUserResponse(rsp *http.Response) (*GetUserResponse, error) {
 		}
 		response.JSON400 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+			Status  int     `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
@@ -7728,6 +8319,17 @@ func ParseUpdateUserResponse(rsp *http.Response) (*UpdateUserResponse, error) {
 			return nil, err
 		}
 		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+			Status  int     `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest struct {
@@ -7782,6 +8384,17 @@ func ParseGetUserAPIKeysResponse(rsp *http.Response) (*GetUserAPIKeysResponse, e
 		}
 		response.JSON400 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+			Status  int     `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
@@ -7822,6 +8435,17 @@ func ParseDeleteUserAPIKeyResponse(rsp *http.Response) (*DeleteUserAPIKeyRespons
 			return nil, err
 		}
 		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+			Status  int     `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest struct {
@@ -7874,6 +8498,17 @@ func ParseCreateUserAPIKeyResponse(rsp *http.Response) (*CreateUserAPIKeyRespons
 			return nil, err
 		}
 		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+			Status  int     `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest struct {
@@ -7930,6 +8565,17 @@ func ParseGetWorkspacesListResponse(rsp *http.Response) (*GetWorkspacesListRespo
 		}
 		response.JSON400 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+			Status  int     `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
@@ -7978,6 +8624,17 @@ func ParseCreateWorkspaceResponse(rsp *http.Response) (*CreateWorkspaceResponse,
 		}
 		response.JSON400 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+			Status  int     `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
@@ -8018,6 +8675,17 @@ func ParseDeleteWorkspaceResponse(rsp *http.Response) (*DeleteWorkspaceResponse,
 			return nil, err
 		}
 		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+			Status  int     `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest struct {
@@ -8067,6 +8735,17 @@ func ParseGetWorkspaceResponse(rsp *http.Response) (*GetWorkspaceResponse, error
 		}
 		response.JSON400 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+			Status  int     `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
@@ -8107,6 +8786,17 @@ func ParseUpdateWorkspaceResponse(rsp *http.Response) (*UpdateWorkspaceResponse,
 			return nil, err
 		}
 		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+			Status  int     `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest struct {
@@ -8156,6 +8846,17 @@ func ParseInviteWorkspaceMemberResponse(rsp *http.Response) (*InviteWorkspaceMem
 		}
 		response.JSON400 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+			Status  int     `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
@@ -8196,6 +8897,17 @@ func ParseAcceptWorkspaceMemberInviteResponse(rsp *http.Response) (*AcceptWorksp
 			return nil, err
 		}
 		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+			Status  int     `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest struct {
@@ -8245,6 +8957,17 @@ func ParseGetWorkspaceMembersListResponse(rsp *http.Response) (*GetWorkspaceMemb
 		}
 		response.JSON400 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+			Status  int     `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
@@ -8286,6 +9009,17 @@ func ParseRemoveWorkspaceMemberResponse(rsp *http.Response) (*RemoveWorkspaceMem
 		}
 		response.JSON400 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+			Status  int     `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
@@ -8326,6 +9060,17 @@ func ParseUpdateWorkspaceMemberRoleResponse(rsp *http.Response) (*UpdateWorkspac
 			return nil, err
 		}
 		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+			Status  int     `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest struct {

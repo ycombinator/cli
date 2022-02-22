@@ -154,6 +154,9 @@ func getBranches(c *cli.Context, client *spec.Client, dbName string) ([]string, 
 	}
 
 	if status := existingBranches.StatusCode(); status > 299 && status != 404 {
+		if existingBranches.JSON401 != nil {
+			return nil, ErrorUnauthorized{message: existingBranches.JSON401.Message}
+		}
 		return nil, fmt.Errorf("listing branches: %s", existingBranches.Status())
 	}
 

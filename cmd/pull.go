@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"path"
 
@@ -59,8 +60,9 @@ func PullCommand(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	if resp.JSON200 == nil {
-		return fmt.Errorf("getting base branch: %s\n", resp.Status())
+	err = checkBranchDetails(resp)
+	if err != nil {
+		return err
 	}
 
 	backupCreated := false
@@ -114,6 +116,26 @@ func copyFile(sourceFile, destinationFile string) (err error) {
 	err = ioutil.WriteFile(destinationFile, input, 0644)
 	if err != nil {
 		return fmt.Errorf("creating %s: %w", destinationFile, err)
+	}
+	return nil
+}
+
+func checkBranchDetails(branch *spec.GetBranchDetailsResponse) error {
+	if branch.JSON401 != nil {
+		return ErrorUnauthorized{message: branch.JSON401.Message}
+	}
+	if branch.JSON400 != nil {
+		return fmt.Errorf("Error getting branch details: %s", branch.JSON400.Message)
+	}
+	if branch.JSON404 != nil {
+		return fmt.Errorf("Error getting branch details: %s", branch.JSON404.Message)
+	}
+
+	if branch.StatusCode() != http.StatusOK {
+		return fmt.Errorf("Error getting branch details: %s", branch.Status())
+	}
+	if branch.JSON200 == nil {
+		return fmt.Errorf("Error getting branch details: 200 OK unexpected response body")
 	}
 	return nil
 }
