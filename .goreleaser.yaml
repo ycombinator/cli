@@ -8,6 +8,7 @@ builds:
     ldflags:
       - -X main.GitCommit={{ .Commit }}
       - -X main.BuildDate={{ .Date }}
+      - -X main.Version={{ .Version }}
     goarch:
       - amd64
       - arm64

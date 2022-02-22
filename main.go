@@ -17,10 +17,11 @@ import (
 var (
 	GitCommit string = "unset"
 	BuildDate string = "unset"
+	Version   string = "unset"
 )
 
 func printVersion(c *cli.Context) error {
-	fmt.Printf("%s version: %s (%s)\n", c.App.Name, BuildDate, GitCommit)
+	fmt.Printf("%s %s\n", c.App.Name, Version)
 	return nil
 }
 
