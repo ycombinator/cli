@@ -74,3 +74,16 @@ jobs:
     - name: Run tests
       run: |
         go test -failfast -v .
+
+  # We want to release all merges to main for now:
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    if: github.ref == 'refs/heads/main'
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Release new version
+      run: |
+        echo y | ./scripts/bump_version.sh
