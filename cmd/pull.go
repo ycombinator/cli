@@ -83,7 +83,7 @@ func PullCommand(c *cli.Context) error {
 		}
 	}()
 
-	baseBranch := resp.JSON200.Branch
+	baseBranch := resp.JSON200
 	version := schemaVersion
 	baseBranch.Schema.FormatVersion = version
 	var file []byte

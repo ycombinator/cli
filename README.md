@@ -44,7 +44,7 @@ To initialize a new database,
 
 - run `xata init` in your project's directory
 - choose a name for your new database
-- select a [workspace](/concepts/workspaces) to connect it to
+- select a [workspace](https://docs.xata.io/concepts/workspaces) to connect it to
 
 This will create a folder called `xata` in your project that contains some required configuration for Xata to do its magic. It's a good idea to commit this folder to your project.
 

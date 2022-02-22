@@ -280,6 +280,10 @@ paths:
       responses:
         '200':
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workspace'
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':
@@ -595,10 +599,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  branch:
-                    $ref: '#/components/schemas/DBBranch'
+                $ref: '#/components/schemas/DBBranch'
         '400':
           $ref: '#/components/responses/BadRequestError'
         '401':

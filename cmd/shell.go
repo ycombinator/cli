@@ -164,7 +164,7 @@ func (env *completerEnv) refreshTableNames(ctx context.Context, dbName, branchNa
 		return nil
 	}
 
-	for _, table := range branchDetails.JSON200.Branch.Schema.Tables {
+	for _, table := range branchDetails.JSON200.Schema.Tables {
 		tableNames = append(tableNames, string(table.Name))
 	}
 

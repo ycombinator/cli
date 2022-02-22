@@ -90,7 +90,7 @@ func GenerateRandomData(c *cli.Context) error {
 		return fmt.Errorf("getting branch details: %s", baseBranch.Status())
 	}
 
-	for _, table := range baseBranch.JSON200.Branch.Schema.Tables {
+	for _, table := range baseBranch.JSON200.Schema.Tables {
 		if !isTableSelected(tables, string(table.Name)) {
 			continue
 		}
