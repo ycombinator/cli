@@ -139,7 +139,10 @@ func InitCommand(c *cli.Context) error {
 	if pull {
 		// Pull existing schema
 		fmt.Println("Pulling database schema...")
-		PullCommand(c)
+		err = PullCommand(c)
+		if err != nil {
+			return fmt.Errorf("Error pulling schema: %w", err)
+		}
 	} else {
 		// Create a new schema file
 		toWrite := defaultSchema
