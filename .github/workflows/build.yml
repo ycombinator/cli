@@ -138,7 +138,7 @@ jobs:
   # Tags created by build workflow don't trigger, call goreleaser:
   publish-release:
     needs: [build, release]
-    uses: xataio/cli/.github/workflows/goreleaser.yml@slack-notifications
+    uses: xataio/cli/.github/workflows/goreleaser.yml@main
 
   on-failure:
     runs-on: ubuntu-latest
