@@ -72,12 +72,57 @@ jobs:
       run: |
         go test -failfast -v .
 
+  on-release-start:
+    runs-on: ubuntu-latest
+    needs: build
+    timeout-minutes: 2
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Post start to Slack
+        uses: slackapi/slack-github-action@v1.17.0
+        with:
+          channel-id: '#cd-activity'
+          payload: |
+            {
+              "text": "Publication of Xata CLI by ${{ github.actor }} started",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":butterfly: *Publication of Xata CLI by ${{ github.actor }} started* :butterfly:"
+                  }
+                },
+                {
+                  "type": "divider"
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*More info:* ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Commit URL:* ${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
+                  }
+                },
+                {
+                  "type": "divider"
+                }
+              ]
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
   # We want to release all merges to main for now:
   release:
-    needs: build
+    needs: on-release-start
     runs-on: ubuntu-latest
     timeout-minutes: 1
-    if: github.ref == 'refs/heads/main'
     steps:
     - uses: actions/checkout@v2
       with:
@@ -89,3 +134,99 @@ jobs:
     - name: Release new version
       run: |
         echo y | ./scripts/bump_version.sh
+
+  # Tags created by build workflow don't trigger, call goreleaser:
+  publish-release:
+    needs: [build, release]
+    uses: xataio/cli/.github/workflows/goreleaser.yml@slack-notifications
+
+  on-failure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    needs: [publish-release]
+    if: failure()
+    steps:
+      - name: Post failure to Slack
+        uses: slackapi/slack-github-action@v1.17.0
+        with:
+          channel-id: '#cd-activity'
+          payload: |
+            {
+              "text": "Publication of Xata CLI failed",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":red_circle: @here *Publication of Xata CLI failed when triggered by ${{ github.actor }}* :red_circle:"
+                  }
+                },
+                {
+                  "type": "divider"
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*More info:* ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Commit URL:* ${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
+                  }
+                },
+                {
+                  "type": "divider"
+                }
+              ]
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
+  on-success:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    needs: [publish-release]
+    steps:
+      - name: Post success to Slack
+        uses: slackapi/slack-github-action@v1.17.0
+        with:
+          channel-id: '#cd-activity'
+          payload: |
+            {
+              "text": "Publication of Xata CLI was successful",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":white_check_mark::rocket: *Publication of Xata CLI by ${{ github.actor }} was successful* :white_check_mark::rocket:"
+                  }
+                },
+                {
+                  "type": "divider"
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*More info:* ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Commit URL:* ${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
+                  }
+                },
+                {
+                  "type": "divider"
+                }
+              ]
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}

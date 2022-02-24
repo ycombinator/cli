@@ -1,14 +1,11 @@
 name: goreleaser
 
 on:
-  push:
-    tags:
-      - '*'
-  # Tags created by build workflow don't trigger ^, this ensures we still run goreleaser: 
-  workflow_run:
-    workflows: [build]
-    types: [completed]
-    branches: [main]
+# To be enabled once we disable autorelease in build.yml
+#  push:
+#    tags:
+#      - '*'
+  workflow_call:
 
 permissions:
   contents: write
