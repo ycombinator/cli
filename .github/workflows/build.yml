@@ -69,8 +69,9 @@ jobs:
       run: make check
 
     - name: Run tests
-      run: |
-        go test -failfast -v .
+      env:
+        TEST_API_KEY: ${{ secrets.TEST_API_KEY }}
+      run: make test
 
   on-release-start:
     runs-on: ubuntu-latest

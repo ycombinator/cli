@@ -9,6 +9,6 @@ cli
 dist/
 
 # Local environment settings
-.envrc
+.env
 
 dist/

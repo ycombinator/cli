@@ -8,6 +8,8 @@ help:  ## This help dialog.
 .PHONY: check
 check: lint  ## CI code checks
 
+xata:
+	go build -o xata
 
 .PHONY: lint
 lint: $(GOLANGCI_LINT)
@@ -20,7 +22,7 @@ fmt: $(GOIMPORTS)   ## Format source code
 	@$(GOIMPORTS) -w ./
 
 .PHONY: test
-test:   ## Run unit and integration tests
+test: xata   ## Run unit and e2e tests
 	go test -race -failfast -v ./...
 
 .PHONY: init
