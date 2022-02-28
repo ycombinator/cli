@@ -173,23 +173,27 @@ func TestAuthLoginCommand(t *testing.T) {
 			err = c.Close()
 			require.NoError(t, err)
 			err = cmd.Wait()
-			exitCode := 0
-			if err != nil {
-				if exitError, ok := err.(*exec.ExitError); ok {
-					exitCode = exitError.ExitCode()
-				} else {
-					require.NoError(t, err)
-				}
-			}
-			require.Equal(t, test.exitCode, exitCode)
+			require.Equal(t, test.exitCode, exitCodeFromError(t, err))
 		})
 	}
 }
 
+func exitCodeFromError(t *testing.T, err error) int {
+	exitCode := 0
+	if err != nil {
+		if exitError, ok := err.(*exec.ExitError); ok {
+			exitCode = exitError.ExitCode()
+		} else {
+			require.NoError(t, err)
+		}
+	}
+	return exitCode
+}
+
 func startCommand(t *testing.T, configDir string, binaryPath string, args ...string) (*expect.Console, *exec.Cmd) {
 	c, err := NewVT10XConsole(
-		expect.WithDefaultTimeout(5 * time.Second),
-		// expect.WithStdout(os.Stdout),
+		expect.WithDefaultTimeout(5*time.Second),
+		expect.WithStdout(os.Stdout),
 	)
 	require.NoError(t, err)
 
