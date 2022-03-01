@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"unicode"
+
+	"gopkg.in/yaml.v3"
 )
 
 // Note: the order of fields here is important for the order of keys
@@ -12,34 +14,34 @@ import (
 // types:
 
 type Schema struct {
-	FormatVersion string  `json:"formatVersion"`
-	Tables        []Table `json:"tables"`
+	FormatVersion string  `json:"formatVersion" yaml:"formatVersion"`
+	Tables        []Table `json:"tables" yaml:"tables"`
 }
 
 type Table struct {
-	Name    string   `json:"name"`
-	Columns []Column `json:"columns"`
+	Name    string   `json:"name" yaml:"name"`
+	Columns []Column `json:"columns" yaml:"columns"`
 }
 
 type Column struct {
-	Name string     `json:"name" validate:"required"`
-	Type ColumnType `json:"type" validate:"required"`
+	Name string     `json:"name" validate:"required" yaml:"name"`
+	Type ColumnType `json:"type" validate:"required" yaml:"type"`
 
-	Columns []Column      `json:"columns,omitempty"`
-	Object  *ColumnObject `json:"-"`
+	Columns []Column      `json:"columns,omitempty" yaml:"columns,omitempty"`
+	Object  *ColumnObject `json:"-" yaml:"-"`
 
-	String   *ColumnString   `json:"string,omitempty"`
-	Bool     *ColumnBool     `json:"bool,omitempty"`
-	Email    *ColumnEmail    `json:"email,omitempty"`
-	Text     *ColumnText     `json:"text,omitempty"`
-	Multiple *ColumnMultiple `json:"multiple,omitempty"`
-	Link     *ColumnLink     `json:"link,omitempty"`
-	Int      *ColumnInt      `json:"int,omitempty"`
+	String   *ColumnString   `json:"string,omitempty" yaml:"string,omitempty"`
+	Bool     *ColumnBool     `json:"bool,omitempty" yaml:"bool,omitempty"`
+	Email    *ColumnEmail    `json:"email,omitempty" yaml:"email,omitempty"`
+	Text     *ColumnText     `json:"text,omitempty" yaml:"text,omitempty"`
+	Multiple *ColumnMultiple `json:"multiple,omitempty" yaml:"multiple,omitempty"`
+	Link     *ColumnLink     `json:"link,omitempty" yaml:"link,omitempty"`
+	Int      *ColumnInt      `json:"int,omitempty" yaml:"int,omitempty"`
 
-	Required bool `json:"required,omitempty"`
-	Unique   bool `json:"unique,omitempty"`
+	Required bool `json:"required,omitempty" yaml:"required,omitempty"`
+	Unique   bool `json:"unique,omitempty" yaml:"unique,omitempty"`
 
-	Description string `json:"description,omitempty"`
+	Description string `json:"description,omitempty" yaml:"description,omitempty"`
 }
 
 // ColumnString contains settings for the string type.
@@ -149,6 +151,14 @@ func (ct ColumnType) MarshalJSON() ([]byte, error) {
 // MarshalYAML marshals a ColumnType to json.
 func (ct ColumnType) MarshalYAML() (interface{}, error) {
 	return ct.String(), nil
+}
+
+func (ct *ColumnType) UnmarshalYAML(value *yaml.Node) error {
+	*ct = ColumnTypeFromString(value.Value)
+	if *ct == 0 {
+		return fmt.Errorf("invalid column type [%s]", value.Value)
+	}
+	return nil
 }
 
 // UnmarshalJSON unmarshals a ColumnType from json.

@@ -35,7 +35,7 @@ func HistoryCommand(c *cli.Context) error {
 	}
 
 	fmt.Printf("Migrations log of [%s]:\n\n", dbName)
-	err = printHistory(c.Context, client, dbName, branch, "", c.Bool("follow"))
+	err = printHistory(c.Context, client, dbName, branch, "", c.Bool("follow"), c.Bool("nocolor"))
 	if err != nil {
 		return err
 	}
@@ -43,12 +43,19 @@ func HistoryCommand(c *cli.Context) error {
 	return nil
 }
 
-func PrintMigration(migration spec.BranchMigration) {
+func PrintMigration(migration spec.BranchMigration, withNoColor bool) {
 	blue := color.New(color.BgBlue).Add(color.FgWhite)
 	red := color.New(color.BgRed).Add(color.FgWhite)
 	yellow := color.New(color.BgYellow).Add(color.FgBlack)
 	yellowFG := color.New(color.FgYellow)
 	indent := "  "
+
+	if withNoColor {
+		blue.DisableColor()
+		red.DisableColor()
+		yellow.DisableColor()
+		yellowFG.DisableColor()
+	}
 
 	if migration.Title != nil {
 		yellowFG.Printf("* %s [status: %s]\n", *migration.Title, migration.Status)
@@ -135,7 +142,8 @@ func checkHistoryResponse(history *spec.GetBranchMigrationHistoryResponse) error
 	return nil
 }
 
-func printHistory(ctx context.Context, client *spec.ClientWithResponses, dbName, branchName, startFromID string, follow bool) error {
+func printHistory(ctx context.Context, client *spec.ClientWithResponses, dbName, branchName,
+	startFromID string, follow bool, withNoColor bool) error {
 	startFrom := startFromID
 	var originBase *spec.StartedFromMetadata
 	// TODO: this needs to be updated to use StartedFromBranch
@@ -156,7 +164,7 @@ func printHistory(ctx context.Context, client *spec.ClientWithResponses, dbName,
 		migrations := *history.JSON200.Migrations
 		originBase = history.JSON200.StartedFrom
 		for _, migration := range migrations {
-			PrintMigration(migration)
+			PrintMigration(migration, withNoColor)
 			fmt.Println()
 		}
 		if len(migrations) == 0 {
@@ -175,7 +183,7 @@ func printHistory(ctx context.Context, client *spec.ClientWithResponses, dbName,
 
 	if follow && originBase != nil {
 		fmt.Println()
-		printHistory(ctx, client, dbName, string(originBase.BranchName), originBase.MigrationID, follow)
+		printHistory(ctx, client, dbName, string(originBase.BranchName), originBase.MigrationID, follow, withNoColor)
 	}
 	return nil
 }

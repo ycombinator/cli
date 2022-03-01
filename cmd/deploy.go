@@ -138,7 +138,7 @@ func DeployCommand(c *cli.Context) error {
 	}
 
 	fmt.Printf("Migration plan preview:\n\n")
-	PrintMigration(plan.Migration)
+	PrintMigration(plan.Migration, c.Bool("nocolor"))
 	fmt.Println()
 
 	var yes bool
