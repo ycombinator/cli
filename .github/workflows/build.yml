@@ -145,7 +145,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 2
     needs: [publish-release]
-    if: failure()
+    if: github.ref == 'refs/heads/main' && failure()
     steps:
       - name: Post failure to Slack
         uses: slackapi/slack-github-action@v1.17.0
