@@ -108,6 +108,8 @@ func GenerateRandomData(c *cli.Context) error {
 		if err != nil {
 			return err
 		}
+
+		fmt.Printf("Inserted %d random records in table %s\n", numberOfRecords, table.Name)
 	}
 
 	return nil
