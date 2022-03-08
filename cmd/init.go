@@ -141,7 +141,7 @@ func InitCommand(c *cli.Context) error {
 		fmt.Println("Pulling database schema...")
 		err = PullCommand(c)
 		if err != nil {
-			return fmt.Errorf("Error pulling schema: %w", err)
+			return err
 		}
 	} else {
 		// Create a new schema file

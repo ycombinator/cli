@@ -223,7 +223,7 @@ func loginWithKey(t *testing.T, config *TestConfig, configDir string) {
 
 	_, err = c.Expect(
 		expect.String("Checking access to the API...OK"),
-		expect.WithTimeout(5*time.Second))
+		expect.WithTimeout(15*time.Second))
 	require.NoError(t, err)
 
 	_, err = c.ExpectString("All set! you can now start using xata")
@@ -247,8 +247,10 @@ func TestAuthStatus(t *testing.T) {
 	_, err = c.ExpectString("You are not logged in, run `xata auth login` first")
 	require.NoError(t, err)
 
-	c.Close()
-	cmd.Wait()
+	err = cmd.Wait()
+	require.Equal(t, 1, exitCodeFromError(t, err))
+	err = c.Close()
+	require.NoError(t, err)
 
 	loginWithKey(t, &config, configDir)
 

@@ -1,8 +1,10 @@
 package cmd
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path"
 	"testing"
 
@@ -110,6 +112,43 @@ func TestInit(t *testing.T) {
 		})
 	}
 
+}
+
+func runInitCommand(t *testing.T, config TestConfig, configDir string, workspaceID, dbName string) {
+	c, cmd := startCommand(t, configDir, config.TestBinaryPath, "init", "--workspaceid", workspaceID)
+	defer c.Close()
+
+	_, err := c.ExpectString("New database name:")
+	require.NoError(t, err)
+
+	_, err = c.SendLine(dbName)
+	require.NoError(t, err)
+
+	_, err = c.ExpectString("Init done. Edit xata/schema.json to get started.")
+	require.NoError(t, err)
+
+	err = cmd.Wait()
+	require.NoError(t, err)
+}
+
+func runDeployCommandAfterInit(t *testing.T, config TestConfig, configDir string, workspaceID, dbName string) {
+	c, cmd := startCommand(t, configDir, config.TestBinaryPath, "deploy")
+	defer c.Close()
+
+	_, err := c.ExpectString(fmt.Sprintf("Database [%s/main] created", dbName))
+	require.NoError(t, err)
+
+	_, err = c.ExpectString("Apply the above migration?")
+	require.NoError(t, err)
+
+	_, err = c.SendLine("Y")
+	require.NoError(t, err)
+
+	_, err = c.ExpectString("Done.")
+	require.NoError(t, err)
+
+	err = cmd.Wait()
+	require.NoError(t, err)
 }
 
 func TestInitYAML(t *testing.T) {
@@ -242,4 +281,53 @@ func TestInitYAML(t *testing.T) {
 			require.Equal(t, test.exitCode, exitCodeFromError(t, err))
 		})
 	}
+}
+
+func TestInitDifferentBranch(t *testing.T) {
+	config, configDir, workspaceID := createTestWorkspace(t)
+
+	dir := t.TempDir()
+	chdir(t, dir)
+
+	setupGitAndDefaultDB(t, config, configDir, workspaceID)
+
+	cmd := exec.Command("git", "checkout", "-b", "new_feature")
+	err := cmd.Run()
+	require.NoError(t, err)
+
+	c, cmd := startCommand(t, configDir, config.TestBinaryPath, "init", "--workspaceid", workspaceID, "-f")
+	defer c.Close()
+
+	_, err = c.ExpectString("Do you want to pull from an existing database?")
+	require.NoError(t, err)
+
+	_, err = c.SendLine("test")
+	require.NoError(t, err)
+
+	_, err = c.ExpectString("Pulling database schema...")
+	require.NoError(t, err)
+
+	_, err = c.ExpectString("Branch [test:new_feature] does not exist. Would you like to pull the schema from another branch?")
+	require.NoError(t, err)
+
+	_, err = c.SendLine("Y")
+	require.NoError(t, err)
+
+	_, err = c.ExpectString("From which branch should I pull the schema?")
+	require.NoError(t, err)
+
+	_, err = c.SendLine("main")
+	require.NoError(t, err)
+
+	_, err = c.ExpectString("Pulling schema from branch [test:main]")
+	require.NoError(t, err)
+
+	_, err = c.ExpectString("Pulled schema written to xata/schema.json")
+	require.NoError(t, err)
+
+	_, err = c.ExpectString("Init done. Edit xata/schema.json to get started.")
+	require.NoError(t, err)
+
+	err = cmd.Wait()
+	require.NoError(t, err)
 }
