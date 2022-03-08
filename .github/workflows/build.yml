@@ -68,10 +68,11 @@ jobs:
     - name: Check/Lint repository
       run: make check
 
-    - name: Run tests
-      env:
-        TEST_API_KEY: ${{ secrets.TEST_API_KEY }}
-      run: make test
+    # TODO: re-enable tests: https://github.com/xataio/cli/issues/39
+    #- name: Run tests
+    #  env:
+    #    TEST_API_KEY: ${{ secrets.TEST_API_KEY }}
+    #  run: make test
 
   on-release-start:
     runs-on: ubuntu-latest
