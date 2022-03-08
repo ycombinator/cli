@@ -13,7 +13,7 @@ import (
 	"github.com/hinshun/vt10x"
 	"github.com/kr/pty"
 	"github.com/stretchr/testify/require"
-	"github.com/xata/cli/internal/envcfg"
+	"github.com/xataio/cli/internal/envcfg"
 )
 
 type TestConfig struct {

@@ -9,7 +9,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/xata/cli/filesystem"
+	"github.com/xataio/cli/filesystem"
 
 	"github.com/urfave/cli/v2"
 )

@@ -11,8 +11,8 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/urfave/cli/v2"
 
-	"github.com/xata/cli/client"
-	"github.com/xata/cli/config"
+	"github.com/xataio/cli/client"
+	"github.com/xataio/cli/config"
 )
 
 func GetAuthSubcommands() []*cli.Command {

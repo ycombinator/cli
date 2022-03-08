@@ -10,7 +10,7 @@ import (
 
 	"github.com/Netflix/go-expect"
 	"github.com/stretchr/testify/require"
-	"github.com/xata/cli/client/spec"
+	"github.com/xataio/cli/client/spec"
 	"gopkg.in/yaml.v3"
 )
 

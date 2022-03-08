@@ -8,7 +8,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/xata/cli/client/spec"
+	"github.com/xataio/cli/client/spec"
 )
 
 // NewXataClient creates a new Xata client.

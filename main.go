@@ -7,9 +7,9 @@ import (
 	"os"
 	"path"
 
-	"github.com/xata/cli/cmd"
-	"github.com/xata/cli/config"
-	"github.com/xata/cli/filesystem"
+	"github.com/xataio/cli/cmd"
+	"github.com/xataio/cli/config"
+	"github.com/xataio/cli/filesystem"
 
 	"github.com/urfave/cli/v2"
 )

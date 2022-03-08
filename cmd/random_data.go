@@ -5,9 +5,9 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/xata/cli/client"
-	"github.com/xata/cli/client/spec"
-	"github.com/xata/cli/config"
+	"github.com/xataio/cli/client"
+	"github.com/xataio/cli/client/spec"
+	"github.com/xataio/cli/config"
 
 	lorem "github.com/drhodes/golorem"
 	petname "github.com/dustinkirkland/golang-petname"

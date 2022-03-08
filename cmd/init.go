@@ -8,8 +8,8 @@ import (
 	"os"
 	"path"
 
-	"github.com/xata/cli/client/spec"
-	"github.com/xata/cli/filesystem"
+	"github.com/xataio/cli/client/spec"
+	"github.com/xataio/cli/filesystem"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/urfave/cli/v2"

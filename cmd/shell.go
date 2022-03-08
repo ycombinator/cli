@@ -14,9 +14,9 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/xata/cli/client"
-	"github.com/xata/cli/client/spec"
-	"github.com/xata/cli/config"
+	"github.com/xataio/cli/client"
+	"github.com/xataio/cli/client/spec"
+	"github.com/xataio/cli/config"
 
 	"github.com/TylerBrock/colorjson"
 	"github.com/c-bata/go-prompt"

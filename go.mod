@@ -1,4 +1,4 @@
-module github.com/xata/cli
+module github.com/xataio/cli
 
 go 1.17
 

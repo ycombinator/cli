@@ -8,12 +8,12 @@ import (
 	"os"
 	"path"
 
-	"github.com/AlecAivazis/survey/v2"
-	"github.com/xata/cli/client"
-	"github.com/xata/cli/client/spec"
-	"github.com/xata/cli/config"
-	"github.com/xata/cli/filesystem"
+	"github.com/xataio/cli/client"
+	"github.com/xataio/cli/client/spec"
+	"github.com/xataio/cli/config"
+	"github.com/xataio/cli/filesystem"
 
+	"github.com/AlecAivazis/survey/v2"
 	"github.com/tidwall/pretty"
 	"github.com/urfave/cli/v2"
 	"gopkg.in/yaml.v3"

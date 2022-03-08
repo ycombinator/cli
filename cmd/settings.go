@@ -7,7 +7,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/xata/cli/filesystem"
+	"github.com/xataio/cli/filesystem"
 
 	"github.com/tidwall/pretty"
 )
