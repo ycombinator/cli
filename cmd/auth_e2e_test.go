@@ -79,6 +79,7 @@ func TestAuthLoginCommand(t *testing.T) {
 			procedure: func(t *testing.T, c *expect.Console) {
 				_, err = c.ExpectString("Introduce your API key:")
 				require.NoError(t, err)
+				time.Sleep(1 * time.Second)
 				_, err = c.SendLine("invalid_key")
 				require.NoError(t, err)
 
@@ -97,6 +98,7 @@ func TestAuthLoginCommand(t *testing.T) {
 			procedure: func(t *testing.T, c *expect.Console) {
 				_, err = c.ExpectString("Introduce your API key:")
 				require.NoError(t, err)
+				time.Sleep(1 * time.Second)
 				_, err = c.SendLine(config.TestKey)
 				require.NoError(t, err)
 
@@ -120,6 +122,7 @@ func TestAuthLoginCommand(t *testing.T) {
 
 				_, err = c.ExpectString("Introduce your API key:")
 				require.NoError(t, err)
+				time.Sleep(1 * time.Second)
 				_, err = c.SendLine(config.TestKey)
 				require.NoError(t, err)
 
@@ -212,12 +215,13 @@ func startCommand(t *testing.T, configDir string, binaryPath string, args ...str
 	return c, cmd
 }
 
-func loginWithKey(t *testing.T, config *TestConfig, configDir string) {
+func loginWithKeyCommand(t *testing.T, config *TestConfig, configDir string) {
 	c, cmd := startCommand(t, configDir, config.TestBinaryPath, "auth", "login")
 	defer c.Close()
 
 	_, err := c.ExpectString("Introduce your API key:")
 	require.NoError(t, err)
+	time.Sleep(1 * time.Second)
 	_, err = c.SendLine(config.TestKey)
 	require.NoError(t, err)
 
@@ -230,6 +234,12 @@ func loginWithKey(t *testing.T, config *TestConfig, configDir string) {
 	require.NoError(t, err)
 
 	err = cmd.Wait()
+	require.NoError(t, err)
+}
+
+func loginWithKey(t *testing.T, config *TestConfig, configDir string) {
+	keyFile := filepath.Join(configDir, "key")
+	err := ioutil.WriteFile(keyFile, []byte(config.TestKey), 0600)
 	require.NoError(t, err)
 }
 
@@ -252,7 +262,7 @@ func TestAuthStatus(t *testing.T) {
 	err = c.Close()
 	require.NoError(t, err)
 
-	loginWithKey(t, &config, configDir)
+	loginWithKeyCommand(t, &config, configDir)
 
 	c, cmd = startCommand(t, configDir, config.TestBinaryPath, "auth", "status")
 	defer c.Close()
