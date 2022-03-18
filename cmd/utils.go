@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"path"
@@ -203,4 +204,31 @@ func printResponse(c *cli.Context, resp *http.Response, err error) error {
 		fmt.Println(string(s))
 	}
 	return nil
+}
+
+func parseBranchUrl(branchUrl string) (workspace string, dbname string, branch string, err error) {
+	u, err := url.Parse(branchUrl)
+	if err != nil {
+		return "", "", "", err
+	}
+
+	hostParts := strings.Split(u.Hostname(), ".")
+	if len(hostParts) != 3 || hostParts[1] != "xata" || hostParts[2] != "sh" {
+		return "", "", "", fmt.Errorf("Expected URL hostname to be a single subdomain under xata.sh (Example demo-1234.xata.sh). Got: %s", u.Hostname())
+	}
+	workspace = hostParts[0]
+
+	pathParts := strings.Split(u.Path, "/")
+	if len(pathParts) < 3 || pathParts[0] != "" || pathParts[1] != "db" {
+		return "", "", "", fmt.Errorf("Expected URL path to be of the form /db/{database}:{branch}. Got: %s", u.Path)
+	}
+
+	dbbranchParts := strings.Split(pathParts[2], ":")
+	if len(dbbranchParts) != 2 {
+		return "", "", "", fmt.Errorf("Expected URL path to be of the form /db/{database}:{branch}. Got: %s", u.Path)
+	}
+	dbname = dbbranchParts[0]
+	branch = dbbranchParts[1]
+
+	return workspace, dbname, branch, nil
 }

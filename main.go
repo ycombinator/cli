@@ -207,6 +207,13 @@ func main() {
 				},
 			},
 			{
+				Name:  "sak",
+				Usage: "Xata Swiss-Army-Knife. Commands in experimental state.",
+				Subcommands: []*cli.Command{
+					cmd.DumpBranchSubcommand(),
+				},
+			},
+			{
 				Name:   "version",
 				Usage:  "Build information",
 				Action: printVersion,
