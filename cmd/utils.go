@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -202,6 +203,21 @@ func printResponse(c *cli.Context, resp *http.Response, err error) error {
 		}
 
 		fmt.Println(string(s))
+	}
+	return nil
+}
+
+func responseToError(resp *http.Response) error {
+	defer resp.Body.Close()
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode > 299 {
+		if resp.StatusCode == http.StatusUnauthorized {
+			return ErrorUnauthorized{message: getMessage(bodyBytes)}
+		}
+		return fmt.Errorf("Error from server: status %d: %s", resp.StatusCode, getMessage(bodyBytes))
 	}
 	return nil
 }

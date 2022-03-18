@@ -211,6 +211,7 @@ func main() {
 				Usage: "Xata Swiss-Army-Knife. Commands in experimental state.",
 				Subcommands: []*cli.Command{
 					cmd.DumpBranchSubcommand(),
+					cmd.LoadBranchSubcommand(),
 				},
 			},
 			{

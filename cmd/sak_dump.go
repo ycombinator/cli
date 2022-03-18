@@ -21,25 +21,9 @@ const dumpPageSize int = 10
 func dumpBranch(c *cli.Context) error {
 
 	branchUrl := c.String("branchUrl")
-	var workspace, dbname, branch string
-	if branchUrl != "" {
-		var err error
-		workspace, dbname, branch, err = parseBranchUrl(branchUrl)
-		if err != nil {
-			return fmt.Errorf("Invalid branch URL: %w", err)
-		}
-	} else {
-		fmt.Println("Branch URL not specified, trying to read from current directory.")
-		var err error
-		dbname, _, branch, err = getDBNameAndBranch(c)
-		if err != nil {
-			return err
-		}
-
-		workspace, err = getWorkspaceID(c)
-		if err != nil {
-			return err
-		}
+	workspace, dbname, branch, err := parseBranchUrl(branchUrl)
+	if err != nil {
+		return fmt.Errorf("Invalid branch URL: %w", err)
 	}
 
 	apiKey, err := config.APIKey(c)
@@ -64,10 +48,6 @@ func dumpBranch(c *cli.Context) error {
 
 	dbbranch := spec.DBBranchNameParam(fmt.Sprintf("%s:%s", dbname, branch))
 	resp, err := clientWithResponses.GetBranchDetailsWithResponse(c.Context, dbbranch)
-	if err != nil {
-		return err
-	}
-	err = checkBranchDetails(resp)
 	if err != nil {
 		return err
 	}
@@ -169,21 +149,21 @@ func dumpTableFile(client *spec.ClientWithResponses, dir string, dbBranch string
 	return nil
 }
 
-func checkQueryDetails(branch *spec.QueryTableResponse) error {
-	if branch.JSON401 != nil {
-		return ErrorUnauthorized{message: branch.JSON401.Message}
+func checkQueryDetails(resp *spec.QueryTableResponse) error {
+	if resp.JSON401 != nil {
+		return ErrorUnauthorized{message: resp.JSON401.Message}
 	}
-	if branch.JSON400 != nil {
-		return fmt.Errorf(branch.JSON400.Message)
+	if resp.JSON400 != nil {
+		return fmt.Errorf(resp.JSON400.Message)
 	}
-	if branch.JSON404 != nil {
-		return fmt.Errorf(branch.JSON404.Message)
+	if resp.JSON404 != nil {
+		return fmt.Errorf(resp.JSON404.Message)
 	}
 
-	if branch.StatusCode() != http.StatusOK {
-		return fmt.Errorf("querying: %s", branch.Status())
+	if resp.StatusCode() != http.StatusOK {
+		return fmt.Errorf("querying: %s", resp.Status())
 	}
-	if branch.JSON200 == nil {
+	if resp.JSON200 == nil {
 		return fmt.Errorf("querying: 200 OK unexpected response body")
 	}
 	return nil
@@ -201,8 +181,9 @@ func DumpBranchSubcommand() *cli.Command {
 				Required: true,
 			},
 			&cli.StringFlag{
-				Name:  "branchUrl",
-				Usage: "The URL of the branch to dump, in the form: https://{workspaceid}.xata.sh/db/{database}:{branch}",
+				Name:     "branchUrl",
+				Usage:    "The URL of the branch to dump, in the form: https://{workspaceid}.xata.sh/db/{database}:{branch}",
+				Required: true,
 			},
 		},
 	}

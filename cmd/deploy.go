@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"path"
 	"time"
@@ -123,8 +124,8 @@ func DeployCommand(c *cli.Context) error {
 	if err != nil {
 		return fmt.Errorf("Error getting migration plan: %w", err)
 	}
-	if resp.StatusCode() > 299 {
-		return fmt.Errorf("Error getting migration plan: %s", resp.Status())
+	if err = checkBranchMigrationPlan(resp); err != nil {
+		return err
 	}
 
 	plan := resp.JSON200
@@ -170,6 +171,26 @@ func DeployCommand(c *cli.Context) error {
 		fmt.Println("Done.")
 	}
 
+	return nil
+}
+
+func checkBranchMigrationPlan(resp *spec.GetBranchMigrationPlanResponse) error {
+	if resp.JSON401 != nil {
+		return ErrorUnauthorized{message: resp.JSON401.Message}
+	}
+	if resp.JSON400 != nil {
+		return fmt.Errorf("getting plan: %s", resp.JSON400.Message)
+	}
+	if resp.JSON404 != nil {
+		return fmt.Errorf("getting plan: %s", resp.JSON404.Message)
+	}
+
+	if resp.StatusCode() != http.StatusOK {
+		return fmt.Errorf("getting plan: %s", resp.Status())
+	}
+	if resp.JSON200 == nil {
+		return fmt.Errorf("getting plan: 200 OK unexpected response body")
+	}
 	return nil
 }
 
