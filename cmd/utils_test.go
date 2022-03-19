@@ -46,7 +46,7 @@ func TestParseBranchUrl(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			workspace, dbname, branch, err := parseBranchUrl(test.url)
+			workspace, dbname, branch, err := parseBranchURL(test.url)
 
 			if test.errMessage == "" {
 				require.NoError(t, err)

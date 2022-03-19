@@ -20,8 +20,8 @@ const dumpPageSize int = 10
 
 func dumpBranch(c *cli.Context) error {
 
-	branchUrl := c.String("branchUrl")
-	workspace, dbname, branch, err := parseBranchUrl(branchUrl)
+	branchURL := c.String("branchUrl")
+	workspace, dbname, branch, err := parseBranchURL(branchURL)
 	if err != nil {
 		return fmt.Errorf("Invalid branch URL: %w", err)
 	}

@@ -19,9 +19,9 @@ import (
 )
 
 func loadBranch(c *cli.Context) error {
-	branchUrl := c.String("branchUrl")
+	branchURL := c.String("branchUrl")
 	dir := c.String("input")
-	workspace, dbname, branch, err := parseBranchUrl(branchUrl)
+	workspace, dbname, branch, err := parseBranchURL(branchURL)
 	if err != nil {
 		return fmt.Errorf("Invalid branch URL: %w", err)
 	}

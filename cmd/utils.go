@@ -222,8 +222,8 @@ func responseToError(resp *http.Response) error {
 	return nil
 }
 
-func parseBranchUrl(branchUrl string) (workspace string, dbname string, branch string, err error) {
-	u, err := url.Parse(branchUrl)
+func parseBranchURL(branchURL string) (workspace string, dbname string, branch string, err error) {
+	u, err := url.Parse(branchURL)
 	if err != nil {
 		return "", "", "", err
 	}
