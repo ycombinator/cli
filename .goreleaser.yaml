@@ -6,9 +6,9 @@ builds:
   - env:
       - CGO_ENABLED=0
     ldflags:
-      - -X main.GitCommit={{ .Commit }}
-      - -X main.BuildDate={{ .Date }}
-      - -X main.Version={{ .Version }}
+      - -X github.com/xataio/cli/buildvar.GitCommit={{ .Commit }}
+      - -X github.com/xataio/cli/buildvar.BuildDate={{ .Date }}
+      - -X github.com/xataio/cli/buildvar.Version={{ .Version }}
     goarch:
       - amd64
       - arm64

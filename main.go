@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/xataio/cli/buildvar"
 	"github.com/xataio/cli/cmd"
 	"github.com/xataio/cli/config"
 	"github.com/xataio/cli/filesystem"
@@ -14,14 +15,8 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-var (
-	GitCommit string = "unset"
-	BuildDate string = "unset"
-	Version   string = "unset"
-)
-
 func printVersion(c *cli.Context) error {
-	fmt.Printf("%s %s\n", c.App.Name, Version)
+	fmt.Printf("%s %s\n", c.App.Name, buildvar.Version)
 	return nil
 }
 
