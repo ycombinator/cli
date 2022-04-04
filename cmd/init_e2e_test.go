@@ -58,7 +58,7 @@ func TestInit(t *testing.T) {
 			name: "run xata deploy",
 			args: []string{"deploy"},
 			procedure: func(t *testing.T, c *expect.Console) {
-				_, err := c.ExpectString("Database [test/main] created")
+				_, err := c.ExpectString("Database [test:main] created")
 				require.NoError(t, err)
 
 				_, err = c.ExpectString("Apply the above migration?")
@@ -135,7 +135,7 @@ func runDeployCommandAfterInit(t *testing.T, config TestConfig, configDir string
 	c, cmd := startCommand(t, configDir, config.TestBinaryPath, "deploy")
 	defer c.Close()
 
-	_, err := c.ExpectString(fmt.Sprintf("Database [%s/main] created", dbName))
+	_, err := c.ExpectString(fmt.Sprintf("Database [%s:main] created", dbName))
 	require.NoError(t, err)
 
 	_, err = c.ExpectString("Apply the above migration?")
@@ -182,7 +182,7 @@ func TestInitYAML(t *testing.T) {
 			name: "run xata deploy",
 			args: []string{"deploy"},
 			procedure: func(t *testing.T, c *expect.Console) {
-				_, err := c.ExpectString("Database [test/main] created")
+				_, err := c.ExpectString("Database [test:main] created")
 				require.NoError(t, err)
 
 				_, err = c.ExpectString("Apply the above migration?")

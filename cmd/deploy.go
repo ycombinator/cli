@@ -68,7 +68,7 @@ func DeployCommand(c *cli.Context) error {
 			return fmt.Errorf("creating database: %s", resp.Status)
 		}
 		if !alreadyExists {
-			fmt.Printf("Database [%s/%s] created\n", dbName, branch)
+			fmt.Printf("Database [%s:%s] created\n", dbName, branch)
 		}
 	} else {
 		mainExists := false
