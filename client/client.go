@@ -6,8 +6,10 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"runtime"
 	"strings"
 
+	"github.com/xataio/cli/buildvar"
 	"github.com/xataio/cli/client/spec"
 )
 
@@ -21,6 +23,7 @@ func NewXataClient(key, workspaceID string) (*spec.Client, error) {
 	return spec.NewClient(url.String(),
 		spec.WithRequestEditorFn(withAPIKey(key)),
 		spec.WithRequestEditorFn(withWorkspacesHost(workspaceID)),
+		spec.WithRequestEditorFn(withUserAgent()),
 	)
 }
 
@@ -57,6 +60,14 @@ func withWorkspacesHost(workspaceID string) spec.RequestEditorFn {
 			req.Host = workspaceID + ".api.xata.io"
 		}
 
+		return nil
+	}
+}
+
+func withUserAgent() spec.RequestEditorFn {
+	return func(ctx context.Context, req *http.Request) error {
+		ua := fmt.Sprintf("xata/%s (%s)", buildvar.Version, runtime.GOOS)
+		req.Header.Set("User-Agent", ua)
 		return nil
 	}
 }
