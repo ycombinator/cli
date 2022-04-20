@@ -19,6 +19,10 @@ import (
 	openapi_types "github.com/deepmap/oapi-codegen/pkg/types"
 )
 
+const (
+	BearerAuthScopes = "bearerAuth.Scopes"
+)
+
 // Defines values for Role.
 const (
 	RoleMaintainer Role = "maintainer"
@@ -193,12 +197,22 @@ type ListBranchesResponse struct {
 
 // ListDatabasesResponse defines model for ListDatabasesResponse.
 type ListDatabasesResponse struct {
+	// A list of databases in a Xata workspace
 	Databases *[]struct {
-		CreatedAt        DateTime `json:"createdAt"`
-		DisplayName      string   `json:"displayName"`
-		Name             string   `json:"name"`
-		NumberOfBranches int      `json:"numberOfBranches"`
-		Ui               *struct {
+		CreatedAt DateTime `json:"createdAt"`
+
+		// The human-readable name of a database
+		DisplayName string `json:"displayName"`
+
+		// The machine-readable name of a database
+		Name string `json:"name"`
+
+		// The number of branches the database has
+		NumberOfBranches int `json:"numberOfBranches"`
+
+		// Metadata about the database for display in Xata user interfaces
+		Ui *struct {
+			// The user-selected color for this database across interfaces
 			Color *string `json:"color,omitempty"`
 		} `json:"ui,omitempty"`
 	} `json:"databases,omitempty"`
@@ -385,6 +399,9 @@ type DBBranchNameParam DBBranchName
 // DBNameParam defines model for DBNameParam.
 type DBNameParam DBName
 
+// InviteIDParam defines model for InviteIDParam.
+type InviteIDParam InviteID
+
 // InviteKeyParam defines model for InviteKeyParam.
 type InviteKeyParam InviteKey
 
@@ -404,14 +421,12 @@ type WorkspaceIDParam WorkspaceID
 type AuthError struct {
 	Id      *string `json:"id,omitempty"`
 	Message string  `json:"message"`
-	Status  int     `json:"status"`
 }
 
 // BadRequestError defines model for BadRequestError.
 type BadRequestError struct {
 	Id      *string `json:"id,omitempty"`
 	Message string  `json:"message"`
-	Status  int     `json:"status"`
 }
 
 // BranchMigrationPlan defines model for BranchMigrationPlan.
@@ -432,11 +447,23 @@ type QueryResponse struct {
 	Records []Record        `json:"records"`
 }
 
+// RecordUpdateResponse defines model for RecordUpdateResponse.
+type RecordUpdateResponse struct {
+	Id   string `json:"id"`
+	Xata struct {
+		Version int `json:"version"`
+	} `json:"xata"`
+}
+
+// SearchResponse defines model for SearchResponse.
+type SearchResponse struct {
+	Records []Record `json:"records"`
+}
+
 // SimpleError defines model for SimpleError.
 type SimpleError struct {
 	Id      *string `json:"id,omitempty"`
 	Message string  `json:"message"`
-	Status  int     `json:"status"`
 }
 
 // CreateBranchJSONBody defines parameters for CreateBranch.
@@ -470,6 +497,21 @@ type ExecuteBranchMigrationPlanJSONBody struct {
 // GetBranchMigrationPlanJSONBody defines parameters for GetBranchMigrationPlan.
 type GetBranchMigrationPlanJSONBody Schema
 
+// SearchBranchJSONBody defines parameters for SearchBranch.
+type SearchBranchJSONBody struct {
+	// Maximum [Levenshtein distance](https://en.wikipedia.org/wiki/Levenshtein_distance) for the search terms. The Levenshtein
+	// distance is the number of one charcter changes needed to make two strings equal. The default is 1, meaning that single
+	// character typos per word are tollerated by search. You can set it to 0 to remove the typo tollerance or set it to 2
+	// to allow two typos in a word.
+	Fuzziness *int `json:"fuzziness,omitempty"`
+
+	// The query string.
+	Query string `json:"query"`
+
+	// An array with the tables in which to search. By default, all tables are included.
+	Tables *[]string `json:"tables,omitempty"`
+}
+
 // UpdateTableJSONBody defines parameters for UpdateTable.
 type UpdateTableJSONBody struct {
 	Name string `json:"name"`
@@ -494,6 +536,22 @@ type InsertRecordJSONBody map[string]interface{}
 // GetRecordJSONBody defines parameters for GetRecord.
 type GetRecordJSONBody struct {
 	Columns *ColumnsFilter `json:"columns,omitempty"`
+}
+
+// UpdateRecordWithIDJSONBody defines parameters for UpdateRecordWithID.
+type UpdateRecordWithIDJSONBody map[string]interface{}
+
+// UpdateRecordWithIDParams defines parameters for UpdateRecordWithID.
+type UpdateRecordWithIDParams struct {
+	IfVersion *int `json:"ifVersion,omitempty"`
+}
+
+// UpsertRecordWithIDJSONBody defines parameters for UpsertRecordWithID.
+type UpsertRecordWithIDJSONBody map[string]interface{}
+
+// UpsertRecordWithIDParams defines parameters for UpsertRecordWithID.
+type UpsertRecordWithIDParams struct {
+	IfVersion *int `json:"ifVersion,omitempty"`
 }
 
 // InsertRecordWithIDJSONBody defines parameters for InsertRecordWithID.
@@ -565,6 +623,9 @@ type ExecuteBranchMigrationPlanJSONRequestBody ExecuteBranchMigrationPlanJSONBod
 // GetBranchMigrationPlanJSONRequestBody defines body for GetBranchMigrationPlan for application/json ContentType.
 type GetBranchMigrationPlanJSONRequestBody GetBranchMigrationPlanJSONBody
 
+// SearchBranchJSONRequestBody defines body for SearchBranch for application/json ContentType.
+type SearchBranchJSONRequestBody SearchBranchJSONBody
+
 // UpdateTableJSONRequestBody defines body for UpdateTable for application/json ContentType.
 type UpdateTableJSONRequestBody UpdateTableJSONBody
 
@@ -582,6 +643,12 @@ type InsertRecordJSONRequestBody InsertRecordJSONBody
 
 // GetRecordJSONRequestBody defines body for GetRecord for application/json ContentType.
 type GetRecordJSONRequestBody GetRecordJSONBody
+
+// UpdateRecordWithIDJSONRequestBody defines body for UpdateRecordWithID for application/json ContentType.
+type UpdateRecordWithIDJSONRequestBody UpdateRecordWithIDJSONBody
+
+// UpsertRecordWithIDJSONRequestBody defines body for UpsertRecordWithID for application/json ContentType.
+type UpsertRecordWithIDJSONRequestBody UpsertRecordWithIDJSONBody
 
 // InsertRecordWithIDJSONRequestBody defines body for InsertRecordWithID for application/json ContentType.
 type InsertRecordWithIDJSONRequestBody InsertRecordWithIDJSONBody
@@ -1098,6 +1165,11 @@ type ClientInterface interface {
 
 	GetBranchMigrationPlan(ctx context.Context, dbBranchName DBBranchNameParam, body GetBranchMigrationPlanJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// SearchBranch request with any body
+	SearchBranchWithBody(ctx context.Context, dbBranchName DBBranchNameParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	SearchBranch(ctx context.Context, dbBranchName DBBranchNameParam, body SearchBranchJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetBranchStats request
 	GetBranchStats(ctx context.Context, dbBranchName DBBranchNameParam, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -1148,6 +1220,16 @@ type ClientInterface interface {
 	GetRecordWithBody(ctx context.Context, dbBranchName DBBranchNameParam, tableName TableNameParam, recordId RecordIDParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	GetRecord(ctx context.Context, dbBranchName DBBranchNameParam, tableName TableNameParam, recordId RecordIDParam, body GetRecordJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateRecordWithID request with any body
+	UpdateRecordWithIDWithBody(ctx context.Context, dbBranchName DBBranchNameParam, tableName TableNameParam, recordId RecordIDParam, params *UpdateRecordWithIDParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateRecordWithID(ctx context.Context, dbBranchName DBBranchNameParam, tableName TableNameParam, recordId RecordIDParam, params *UpdateRecordWithIDParams, body UpdateRecordWithIDJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpsertRecordWithID request with any body
+	UpsertRecordWithIDWithBody(ctx context.Context, dbBranchName DBBranchNameParam, tableName TableNameParam, recordId RecordIDParam, params *UpsertRecordWithIDParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpsertRecordWithID(ctx context.Context, dbBranchName DBBranchNameParam, tableName TableNameParam, recordId RecordIDParam, params *UpsertRecordWithIDParams, body UpsertRecordWithIDJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// InsertRecordWithID request with any body
 	InsertRecordWithIDWithBody(ctx context.Context, dbBranchName DBBranchNameParam, tableName TableNameParam, recordId RecordIDParam, params *InsertRecordWithIDParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1224,6 +1306,12 @@ type ClientInterface interface {
 	InviteWorkspaceMemberWithBody(ctx context.Context, workspaceId WorkspaceIDParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	InviteWorkspaceMember(ctx context.Context, workspaceId WorkspaceIDParam, body InviteWorkspaceMemberJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CancelWorkspaceMemberInvite request
+	CancelWorkspaceMemberInvite(ctx context.Context, workspaceId WorkspaceIDParam, inviteId InviteIDParam, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ResendWorkspaceMemberInvite request
+	ResendWorkspaceMemberInvite(ctx context.Context, workspaceId WorkspaceIDParam, inviteId InviteIDParam, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// AcceptWorkspaceMemberInvite request
 	AcceptWorkspaceMemberInvite(ctx context.Context, workspaceId WorkspaceIDParam, inviteKey InviteKeyParam, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1386,6 +1474,30 @@ func (c *Client) GetBranchMigrationPlanWithBody(ctx context.Context, dbBranchNam
 
 func (c *Client) GetBranchMigrationPlan(ctx context.Context, dbBranchName DBBranchNameParam, body GetBranchMigrationPlanJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetBranchMigrationPlanRequest(c.Server, dbBranchName, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) SearchBranchWithBody(ctx context.Context, dbBranchName DBBranchNameParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSearchBranchRequestWithBody(c.Server, dbBranchName, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) SearchBranch(ctx context.Context, dbBranchName DBBranchNameParam, body SearchBranchJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSearchBranchRequest(c.Server, dbBranchName, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1614,6 +1726,54 @@ func (c *Client) GetRecordWithBody(ctx context.Context, dbBranchName DBBranchNam
 
 func (c *Client) GetRecord(ctx context.Context, dbBranchName DBBranchNameParam, tableName TableNameParam, recordId RecordIDParam, body GetRecordJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetRecordRequest(c.Server, dbBranchName, tableName, recordId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateRecordWithIDWithBody(ctx context.Context, dbBranchName DBBranchNameParam, tableName TableNameParam, recordId RecordIDParam, params *UpdateRecordWithIDParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateRecordWithIDRequestWithBody(c.Server, dbBranchName, tableName, recordId, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateRecordWithID(ctx context.Context, dbBranchName DBBranchNameParam, tableName TableNameParam, recordId RecordIDParam, params *UpdateRecordWithIDParams, body UpdateRecordWithIDJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateRecordWithIDRequest(c.Server, dbBranchName, tableName, recordId, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpsertRecordWithIDWithBody(ctx context.Context, dbBranchName DBBranchNameParam, tableName TableNameParam, recordId RecordIDParam, params *UpsertRecordWithIDParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpsertRecordWithIDRequestWithBody(c.Server, dbBranchName, tableName, recordId, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpsertRecordWithID(ctx context.Context, dbBranchName DBBranchNameParam, tableName TableNameParam, recordId RecordIDParam, params *UpsertRecordWithIDParams, body UpsertRecordWithIDJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpsertRecordWithIDRequest(c.Server, dbBranchName, tableName, recordId, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1950,6 +2110,30 @@ func (c *Client) InviteWorkspaceMemberWithBody(ctx context.Context, workspaceId 
 
 func (c *Client) InviteWorkspaceMember(ctx context.Context, workspaceId WorkspaceIDParam, body InviteWorkspaceMemberJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewInviteWorkspaceMemberRequest(c.Server, workspaceId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CancelWorkspaceMemberInvite(ctx context.Context, workspaceId WorkspaceIDParam, inviteId InviteIDParam, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCancelWorkspaceMemberInviteRequest(c.Server, workspaceId, inviteId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ResendWorkspaceMemberInvite(ctx context.Context, workspaceId WorkspaceIDParam, inviteId InviteIDParam, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewResendWorkspaceMemberInviteRequest(c.Server, workspaceId, inviteId)
 	if err != nil {
 		return nil, err
 	}
@@ -2358,6 +2542,53 @@ func NewGetBranchMigrationPlanRequestWithBody(server string, dbBranchName DBBran
 	}
 
 	operationPath := fmt.Sprintf("/db/%s/migrations/plan", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewSearchBranchRequest calls the generic SearchBranch builder with application/json body
+func NewSearchBranchRequest(server string, dbBranchName DBBranchNameParam, body SearchBranchJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewSearchBranchRequestWithBody(server, dbBranchName, "application/json", bodyReader)
+}
+
+// NewSearchBranchRequestWithBody generates requests for SearchBranch with any type of body
+func NewSearchBranchRequestWithBody(server string, dbBranchName DBBranchNameParam, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "db_branch_name", runtime.ParamLocationPath, dbBranchName)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/db/%s/search", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -3007,6 +3238,168 @@ func NewGetRecordRequestWithBody(server string, dbBranchName DBBranchNameParam, 
 	}
 
 	req, err := http.NewRequest("GET", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewUpdateRecordWithIDRequest calls the generic UpdateRecordWithID builder with application/json body
+func NewUpdateRecordWithIDRequest(server string, dbBranchName DBBranchNameParam, tableName TableNameParam, recordId RecordIDParam, params *UpdateRecordWithIDParams, body UpdateRecordWithIDJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateRecordWithIDRequestWithBody(server, dbBranchName, tableName, recordId, params, "application/json", bodyReader)
+}
+
+// NewUpdateRecordWithIDRequestWithBody generates requests for UpdateRecordWithID with any type of body
+func NewUpdateRecordWithIDRequestWithBody(server string, dbBranchName DBBranchNameParam, tableName TableNameParam, recordId RecordIDParam, params *UpdateRecordWithIDParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "db_branch_name", runtime.ParamLocationPath, dbBranchName)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "table_name", runtime.ParamLocationPath, tableName)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam2 string
+
+	pathParam2, err = runtime.StyleParamWithLocation("simple", false, "record_id", runtime.ParamLocationPath, recordId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/db/%s/tables/%s/data/%s", pathParam0, pathParam1, pathParam2)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.IfVersion != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "ifVersion", runtime.ParamLocationQuery, *params.IfVersion); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("PATCH", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewUpsertRecordWithIDRequest calls the generic UpsertRecordWithID builder with application/json body
+func NewUpsertRecordWithIDRequest(server string, dbBranchName DBBranchNameParam, tableName TableNameParam, recordId RecordIDParam, params *UpsertRecordWithIDParams, body UpsertRecordWithIDJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpsertRecordWithIDRequestWithBody(server, dbBranchName, tableName, recordId, params, "application/json", bodyReader)
+}
+
+// NewUpsertRecordWithIDRequestWithBody generates requests for UpsertRecordWithID with any type of body
+func NewUpsertRecordWithIDRequestWithBody(server string, dbBranchName DBBranchNameParam, tableName TableNameParam, recordId RecordIDParam, params *UpsertRecordWithIDParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "db_branch_name", runtime.ParamLocationPath, dbBranchName)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "table_name", runtime.ParamLocationPath, tableName)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam2 string
+
+	pathParam2, err = runtime.StyleParamWithLocation("simple", false, "record_id", runtime.ParamLocationPath, recordId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/db/%s/tables/%s/data/%s", pathParam0, pathParam1, pathParam2)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryURL.Query()
+
+	if params.IfVersion != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "ifVersion", runtime.ParamLocationQuery, *params.IfVersion); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
 	if err != nil {
 		return nil, err
 	}
@@ -3822,6 +4215,88 @@ func NewInviteWorkspaceMemberRequestWithBody(server string, workspaceId Workspac
 	return req, nil
 }
 
+// NewCancelWorkspaceMemberInviteRequest generates requests for CancelWorkspaceMemberInvite
+func NewCancelWorkspaceMemberInviteRequest(server string, workspaceId WorkspaceIDParam, inviteId InviteIDParam) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "workspace_id", runtime.ParamLocationPath, workspaceId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "invite_id", runtime.ParamLocationPath, inviteId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/workspaces/%s/invites/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewResendWorkspaceMemberInviteRequest generates requests for ResendWorkspaceMemberInvite
+func NewResendWorkspaceMemberInviteRequest(server string, workspaceId WorkspaceIDParam, inviteId InviteIDParam) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "workspace_id", runtime.ParamLocationPath, workspaceId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "invite_id", runtime.ParamLocationPath, inviteId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/workspaces/%s/invites/%s/resend", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewAcceptWorkspaceMemberInviteRequest generates requests for AcceptWorkspaceMemberInvite
 func NewAcceptWorkspaceMemberInviteRequest(server string, workspaceId WorkspaceIDParam, inviteKey InviteKeyParam) (*http.Request, error) {
 	var err error
@@ -4069,6 +4544,11 @@ type ClientWithResponsesInterface interface {
 
 	GetBranchMigrationPlanWithResponse(ctx context.Context, dbBranchName DBBranchNameParam, body GetBranchMigrationPlanJSONRequestBody, reqEditors ...RequestEditorFn) (*GetBranchMigrationPlanResponse, error)
 
+	// SearchBranch request with any body
+	SearchBranchWithBodyWithResponse(ctx context.Context, dbBranchName DBBranchNameParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SearchBranchResponse, error)
+
+	SearchBranchWithResponse(ctx context.Context, dbBranchName DBBranchNameParam, body SearchBranchJSONRequestBody, reqEditors ...RequestEditorFn) (*SearchBranchResponse, error)
+
 	// GetBranchStats request
 	GetBranchStatsWithResponse(ctx context.Context, dbBranchName DBBranchNameParam, reqEditors ...RequestEditorFn) (*GetBranchStatsResponse, error)
 
@@ -4119,6 +4599,16 @@ type ClientWithResponsesInterface interface {
 	GetRecordWithBodyWithResponse(ctx context.Context, dbBranchName DBBranchNameParam, tableName TableNameParam, recordId RecordIDParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*GetRecordResponse, error)
 
 	GetRecordWithResponse(ctx context.Context, dbBranchName DBBranchNameParam, tableName TableNameParam, recordId RecordIDParam, body GetRecordJSONRequestBody, reqEditors ...RequestEditorFn) (*GetRecordResponse, error)
+
+	// UpdateRecordWithID request with any body
+	UpdateRecordWithIDWithBodyWithResponse(ctx context.Context, dbBranchName DBBranchNameParam, tableName TableNameParam, recordId RecordIDParam, params *UpdateRecordWithIDParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateRecordWithIDResponse, error)
+
+	UpdateRecordWithIDWithResponse(ctx context.Context, dbBranchName DBBranchNameParam, tableName TableNameParam, recordId RecordIDParam, params *UpdateRecordWithIDParams, body UpdateRecordWithIDJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateRecordWithIDResponse, error)
+
+	// UpsertRecordWithID request with any body
+	UpsertRecordWithIDWithBodyWithResponse(ctx context.Context, dbBranchName DBBranchNameParam, tableName TableNameParam, recordId RecordIDParam, params *UpsertRecordWithIDParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpsertRecordWithIDResponse, error)
+
+	UpsertRecordWithIDWithResponse(ctx context.Context, dbBranchName DBBranchNameParam, tableName TableNameParam, recordId RecordIDParam, params *UpsertRecordWithIDParams, body UpsertRecordWithIDJSONRequestBody, reqEditors ...RequestEditorFn) (*UpsertRecordWithIDResponse, error)
 
 	// InsertRecordWithID request with any body
 	InsertRecordWithIDWithBodyWithResponse(ctx context.Context, dbBranchName DBBranchNameParam, tableName TableNameParam, recordId RecordIDParam, params *InsertRecordWithIDParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*InsertRecordWithIDResponse, error)
@@ -4196,6 +4686,12 @@ type ClientWithResponsesInterface interface {
 
 	InviteWorkspaceMemberWithResponse(ctx context.Context, workspaceId WorkspaceIDParam, body InviteWorkspaceMemberJSONRequestBody, reqEditors ...RequestEditorFn) (*InviteWorkspaceMemberResponse, error)
 
+	// CancelWorkspaceMemberInvite request
+	CancelWorkspaceMemberInviteWithResponse(ctx context.Context, workspaceId WorkspaceIDParam, inviteId InviteIDParam, reqEditors ...RequestEditorFn) (*CancelWorkspaceMemberInviteResponse, error)
+
+	// ResendWorkspaceMemberInvite request
+	ResendWorkspaceMemberInviteWithResponse(ctx context.Context, workspaceId WorkspaceIDParam, inviteId InviteIDParam, reqEditors ...RequestEditorFn) (*ResendWorkspaceMemberInviteResponse, error)
+
 	// AcceptWorkspaceMemberInvite request
 	AcceptWorkspaceMemberInviteWithResponse(ctx context.Context, workspaceId WorkspaceIDParam, inviteKey InviteKeyParam, reqEditors ...RequestEditorFn) (*AcceptWorkspaceMemberInviteResponse, error)
 
@@ -4217,17 +4713,14 @@ type DeleteBranchResponse struct {
 	JSON400      *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 }
 
@@ -4254,17 +4747,14 @@ type GetBranchDetailsResponse struct {
 	JSON400      *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 }
 
@@ -4290,17 +4780,14 @@ type CreateBranchResponse struct {
 	JSON400      *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 }
 
@@ -4327,17 +4814,14 @@ type GetBranchMetadataResponse struct {
 	JSON400      *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 }
 
@@ -4363,17 +4847,14 @@ type UpdateBranchMetadataResponse struct {
 	JSON400      *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 }
 
@@ -4403,17 +4884,14 @@ type GetBranchMigrationHistoryResponse struct {
 	JSON400 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 }
 
@@ -4439,17 +4917,14 @@ type ExecuteBranchMigrationPlanResponse struct {
 	JSON400      *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 }
 
@@ -4479,17 +4954,14 @@ type GetBranchMigrationPlanResponse struct {
 	JSON400 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 }
 
@@ -4503,6 +4975,42 @@ func (r GetBranchMigrationPlanResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetBranchMigrationPlanResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type SearchBranchResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Records []Record `json:"records"`
+	}
+	JSON400 *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+	}
+	JSON401 *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+	}
+	JSON404 *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r SearchBranchResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r SearchBranchResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -4526,17 +5034,14 @@ type GetBranchStatsResponse struct {
 	JSON400 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 }
 
@@ -4562,12 +5067,10 @@ type DeleteTableResponse struct {
 	JSON400      *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 }
 
@@ -4593,17 +5096,14 @@ type UpdateTableResponse struct {
 	JSON400      *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 }
 
@@ -4629,22 +5129,18 @@ type CreateTableResponse struct {
 	JSON400      *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON422 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 }
 
@@ -4673,18 +5169,15 @@ type BulkInsertTableRecordsResponse struct {
 	JSON400 *struct {
 		Errors []struct {
 			Message *string `json:"message,omitempty"`
-			Status  int     `json:"status"`
 		} `json:"errors"`
 	}
 	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 }
 
@@ -4713,17 +5206,14 @@ type GetTableColumnsResponse struct {
 	JSON400 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 }
 
@@ -4752,17 +5242,14 @@ type AddTableColumnResponse struct {
 	JSON400 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 }
 
@@ -4791,17 +5278,14 @@ type DeleteColumnResponse struct {
 	JSON400 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 }
 
@@ -4828,17 +5312,14 @@ type GetColumnResponse struct {
 	JSON400      *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 }
 
@@ -4867,17 +5348,14 @@ type UpdateColumnResponse struct {
 	JSON400 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 }
 
@@ -4909,17 +5387,14 @@ type InsertRecordResponse struct {
 	JSON400 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 }
 
@@ -4945,17 +5420,14 @@ type DeleteRecordResponse struct {
 	JSON400      *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 }
 
@@ -4982,17 +5454,14 @@ type GetRecordResponse struct {
 	JSON400      *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 }
 
@@ -5012,6 +5481,92 @@ func (r GetRecordResponse) StatusCode() int {
 	return 0
 }
 
+type UpdateRecordWithIDResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Id   string `json:"id"`
+		Xata struct {
+			Version int `json:"version"`
+		} `json:"xata"`
+	}
+	JSON400 *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+	}
+	JSON401 *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+	}
+	JSON404 *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+	}
+	JSON422 *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateRecordWithIDResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateRecordWithIDResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpsertRecordWithIDResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Id   string `json:"id"`
+		Xata struct {
+			Version int `json:"version"`
+		} `json:"xata"`
+	}
+	JSON400 *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+	}
+	JSON401 *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+	}
+	JSON404 *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+	}
+	JSON422 *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r UpsertRecordWithIDResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpsertRecordWithIDResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type InsertRecordWithIDResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -5024,22 +5579,18 @@ type InsertRecordWithIDResponse struct {
 	JSON400 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON422 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 }
 
@@ -5070,17 +5621,14 @@ type QueryTableResponse struct {
 	JSON400 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 }
 
@@ -5109,17 +5657,14 @@ type GetTableSchemaResponse struct {
 	JSON400 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 }
 
@@ -5145,22 +5690,18 @@ type SetTableSchemaResponse struct {
 	JSON400      *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON409 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 }
 
@@ -5187,12 +5728,10 @@ type GetDatabaseListResponse struct {
 	JSON400      *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 }
 
@@ -5218,17 +5757,14 @@ type DeleteDatabaseResponse struct {
 	JSON400      *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 }
 
@@ -5255,17 +5791,14 @@ type GetBranchListResponse struct {
 	JSON400      *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 }
 
@@ -5295,12 +5828,10 @@ type CreateDatabaseResponse struct {
 	JSON400 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 }
 
@@ -5326,17 +5857,14 @@ type DeleteUserResponse struct {
 	JSON400      *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 }
 
@@ -5363,17 +5891,14 @@ type GetUserResponse struct {
 	JSON400      *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 }
 
@@ -5400,17 +5925,14 @@ type UpdateUserResponse struct {
 	JSON400      *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 }
 
@@ -5442,17 +5964,14 @@ type GetUserAPIKeysResponse struct {
 	JSON400 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 }
 
@@ -5478,17 +5997,14 @@ type DeleteUserAPIKeyResponse struct {
 	JSON400      *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 }
 
@@ -5519,17 +6035,14 @@ type CreateUserAPIKeyResponse struct {
 	JSON400 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 }
 
@@ -5563,17 +6076,14 @@ type GetWorkspacesListResponse struct {
 	JSON400 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 }
 
@@ -5600,17 +6110,14 @@ type CreateWorkspaceResponse struct {
 	JSON400      *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 }
 
@@ -5636,17 +6143,14 @@ type DeleteWorkspaceResponse struct {
 	JSON400      *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 }
 
@@ -5673,17 +6177,14 @@ type GetWorkspaceResponse struct {
 	JSON400      *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 }
 
@@ -5710,17 +6211,14 @@ type UpdateWorkspaceResponse struct {
 	JSON400      *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 }
 
@@ -5747,17 +6245,14 @@ type InviteWorkspaceMemberResponse struct {
 	JSON400      *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 }
 
@@ -5777,23 +6272,86 @@ func (r InviteWorkspaceMemberResponse) StatusCode() int {
 	return 0
 }
 
+type CancelWorkspaceMemberInviteResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+	}
+	JSON401 *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+	}
+	JSON404 *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r CancelWorkspaceMemberInviteResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CancelWorkspaceMemberInviteResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ResendWorkspaceMemberInviteResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+	}
+	JSON401 *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+	}
+	JSON404 *struct {
+		Id      *string `json:"id,omitempty"`
+		Message string  `json:"message"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r ResendWorkspaceMemberInviteResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ResendWorkspaceMemberInviteResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type AcceptWorkspaceMemberInviteResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON400      *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 }
 
@@ -5820,17 +6378,14 @@ type GetWorkspaceMembersListResponse struct {
 	JSON400      *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 }
 
@@ -5856,17 +6411,14 @@ type RemoveWorkspaceMemberResponse struct {
 	JSON400      *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 }
 
@@ -5892,17 +6444,14 @@ type UpdateWorkspaceMemberRoleResponse struct {
 	JSON400      *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON401 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 	JSON404 *struct {
 		Id      *string `json:"id,omitempty"`
 		Message string  `json:"message"`
-		Status  int     `json:"status"`
 	}
 }
 
@@ -6032,6 +6581,23 @@ func (c *ClientWithResponses) GetBranchMigrationPlanWithResponse(ctx context.Con
 		return nil, err
 	}
 	return ParseGetBranchMigrationPlanResponse(rsp)
+}
+
+// SearchBranchWithBodyWithResponse request with arbitrary body returning *SearchBranchResponse
+func (c *ClientWithResponses) SearchBranchWithBodyWithResponse(ctx context.Context, dbBranchName DBBranchNameParam, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SearchBranchResponse, error) {
+	rsp, err := c.SearchBranchWithBody(ctx, dbBranchName, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSearchBranchResponse(rsp)
+}
+
+func (c *ClientWithResponses) SearchBranchWithResponse(ctx context.Context, dbBranchName DBBranchNameParam, body SearchBranchJSONRequestBody, reqEditors ...RequestEditorFn) (*SearchBranchResponse, error) {
+	rsp, err := c.SearchBranch(ctx, dbBranchName, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseSearchBranchResponse(rsp)
 }
 
 // GetBranchStatsWithResponse request returning *GetBranchStatsResponse
@@ -6197,6 +6763,40 @@ func (c *ClientWithResponses) GetRecordWithResponse(ctx context.Context, dbBranc
 		return nil, err
 	}
 	return ParseGetRecordResponse(rsp)
+}
+
+// UpdateRecordWithIDWithBodyWithResponse request with arbitrary body returning *UpdateRecordWithIDResponse
+func (c *ClientWithResponses) UpdateRecordWithIDWithBodyWithResponse(ctx context.Context, dbBranchName DBBranchNameParam, tableName TableNameParam, recordId RecordIDParam, params *UpdateRecordWithIDParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateRecordWithIDResponse, error) {
+	rsp, err := c.UpdateRecordWithIDWithBody(ctx, dbBranchName, tableName, recordId, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateRecordWithIDResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateRecordWithIDWithResponse(ctx context.Context, dbBranchName DBBranchNameParam, tableName TableNameParam, recordId RecordIDParam, params *UpdateRecordWithIDParams, body UpdateRecordWithIDJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateRecordWithIDResponse, error) {
+	rsp, err := c.UpdateRecordWithID(ctx, dbBranchName, tableName, recordId, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateRecordWithIDResponse(rsp)
+}
+
+// UpsertRecordWithIDWithBodyWithResponse request with arbitrary body returning *UpsertRecordWithIDResponse
+func (c *ClientWithResponses) UpsertRecordWithIDWithBodyWithResponse(ctx context.Context, dbBranchName DBBranchNameParam, tableName TableNameParam, recordId RecordIDParam, params *UpsertRecordWithIDParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpsertRecordWithIDResponse, error) {
+	rsp, err := c.UpsertRecordWithIDWithBody(ctx, dbBranchName, tableName, recordId, params, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpsertRecordWithIDResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpsertRecordWithIDWithResponse(ctx context.Context, dbBranchName DBBranchNameParam, tableName TableNameParam, recordId RecordIDParam, params *UpsertRecordWithIDParams, body UpsertRecordWithIDJSONRequestBody, reqEditors ...RequestEditorFn) (*UpsertRecordWithIDResponse, error) {
+	rsp, err := c.UpsertRecordWithID(ctx, dbBranchName, tableName, recordId, params, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpsertRecordWithIDResponse(rsp)
 }
 
 // InsertRecordWithIDWithBodyWithResponse request with arbitrary body returning *InsertRecordWithIDResponse
@@ -6443,6 +7043,24 @@ func (c *ClientWithResponses) InviteWorkspaceMemberWithResponse(ctx context.Cont
 	return ParseInviteWorkspaceMemberResponse(rsp)
 }
 
+// CancelWorkspaceMemberInviteWithResponse request returning *CancelWorkspaceMemberInviteResponse
+func (c *ClientWithResponses) CancelWorkspaceMemberInviteWithResponse(ctx context.Context, workspaceId WorkspaceIDParam, inviteId InviteIDParam, reqEditors ...RequestEditorFn) (*CancelWorkspaceMemberInviteResponse, error) {
+	rsp, err := c.CancelWorkspaceMemberInvite(ctx, workspaceId, inviteId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCancelWorkspaceMemberInviteResponse(rsp)
+}
+
+// ResendWorkspaceMemberInviteWithResponse request returning *ResendWorkspaceMemberInviteResponse
+func (c *ClientWithResponses) ResendWorkspaceMemberInviteWithResponse(ctx context.Context, workspaceId WorkspaceIDParam, inviteId InviteIDParam, reqEditors ...RequestEditorFn) (*ResendWorkspaceMemberInviteResponse, error) {
+	rsp, err := c.ResendWorkspaceMemberInvite(ctx, workspaceId, inviteId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseResendWorkspaceMemberInviteResponse(rsp)
+}
+
 // AcceptWorkspaceMemberInviteWithResponse request returning *AcceptWorkspaceMemberInviteResponse
 func (c *ClientWithResponses) AcceptWorkspaceMemberInviteWithResponse(ctx context.Context, workspaceId WorkspaceIDParam, inviteKey InviteKeyParam, reqEditors ...RequestEditorFn) (*AcceptWorkspaceMemberInviteResponse, error) {
 	rsp, err := c.AcceptWorkspaceMemberInvite(ctx, workspaceId, inviteKey, reqEditors...)
@@ -6505,7 +7123,6 @@ func ParseDeleteBranchResponse(rsp *http.Response) (*DeleteBranchResponse, error
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -6516,7 +7133,6 @@ func ParseDeleteBranchResponse(rsp *http.Response) (*DeleteBranchResponse, error
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -6527,7 +7143,6 @@ func ParseDeleteBranchResponse(rsp *http.Response) (*DeleteBranchResponse, error
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -6564,7 +7179,6 @@ func ParseGetBranchDetailsResponse(rsp *http.Response) (*GetBranchDetailsRespons
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -6575,7 +7189,6 @@ func ParseGetBranchDetailsResponse(rsp *http.Response) (*GetBranchDetailsRespons
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -6586,7 +7199,6 @@ func ParseGetBranchDetailsResponse(rsp *http.Response) (*GetBranchDetailsRespons
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -6616,7 +7228,6 @@ func ParseCreateBranchResponse(rsp *http.Response) (*CreateBranchResponse, error
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -6627,7 +7238,6 @@ func ParseCreateBranchResponse(rsp *http.Response) (*CreateBranchResponse, error
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -6638,7 +7248,6 @@ func ParseCreateBranchResponse(rsp *http.Response) (*CreateBranchResponse, error
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -6675,7 +7284,6 @@ func ParseGetBranchMetadataResponse(rsp *http.Response) (*GetBranchMetadataRespo
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -6686,7 +7294,6 @@ func ParseGetBranchMetadataResponse(rsp *http.Response) (*GetBranchMetadataRespo
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -6697,7 +7304,6 @@ func ParseGetBranchMetadataResponse(rsp *http.Response) (*GetBranchMetadataRespo
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -6727,7 +7333,6 @@ func ParseUpdateBranchMetadataResponse(rsp *http.Response) (*UpdateBranchMetadat
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -6738,7 +7343,6 @@ func ParseUpdateBranchMetadataResponse(rsp *http.Response) (*UpdateBranchMetadat
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -6749,7 +7353,6 @@ func ParseUpdateBranchMetadataResponse(rsp *http.Response) (*UpdateBranchMetadat
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -6789,7 +7392,6 @@ func ParseGetBranchMigrationHistoryResponse(rsp *http.Response) (*GetBranchMigra
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -6800,7 +7402,6 @@ func ParseGetBranchMigrationHistoryResponse(rsp *http.Response) (*GetBranchMigra
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -6811,7 +7412,6 @@ func ParseGetBranchMigrationHistoryResponse(rsp *http.Response) (*GetBranchMigra
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -6841,7 +7441,6 @@ func ParseExecuteBranchMigrationPlanResponse(rsp *http.Response) (*ExecuteBranch
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -6852,7 +7451,6 @@ func ParseExecuteBranchMigrationPlanResponse(rsp *http.Response) (*ExecuteBranch
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -6863,7 +7461,6 @@ func ParseExecuteBranchMigrationPlanResponse(rsp *http.Response) (*ExecuteBranch
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -6903,7 +7500,6 @@ func ParseGetBranchMigrationPlanResponse(rsp *http.Response) (*GetBranchMigratio
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -6914,7 +7510,6 @@ func ParseGetBranchMigrationPlanResponse(rsp *http.Response) (*GetBranchMigratio
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -6925,7 +7520,64 @@ func ParseGetBranchMigrationPlanResponse(rsp *http.Response) (*GetBranchMigratio
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseSearchBranchResponse parses an HTTP response from a SearchBranchWithResponse call
+func ParseSearchBranchResponse(rsp *http.Response) (*SearchBranchResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &SearchBranchResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Records []Record `json:"records"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -6972,7 +7624,6 @@ func ParseGetBranchStatsResponse(rsp *http.Response) (*GetBranchStatsResponse, e
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -6983,7 +7634,6 @@ func ParseGetBranchStatsResponse(rsp *http.Response) (*GetBranchStatsResponse, e
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -6994,7 +7644,6 @@ func ParseGetBranchStatsResponse(rsp *http.Response) (*GetBranchStatsResponse, e
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7024,7 +7673,6 @@ func ParseDeleteTableResponse(rsp *http.Response) (*DeleteTableResponse, error) 
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7035,7 +7683,6 @@ func ParseDeleteTableResponse(rsp *http.Response) (*DeleteTableResponse, error) 
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7065,7 +7712,6 @@ func ParseUpdateTableResponse(rsp *http.Response) (*UpdateTableResponse, error) 
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7076,7 +7722,6 @@ func ParseUpdateTableResponse(rsp *http.Response) (*UpdateTableResponse, error) 
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7087,7 +7732,6 @@ func ParseUpdateTableResponse(rsp *http.Response) (*UpdateTableResponse, error) 
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7117,7 +7761,6 @@ func ParseCreateTableResponse(rsp *http.Response) (*CreateTableResponse, error) 
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7128,7 +7771,6 @@ func ParseCreateTableResponse(rsp *http.Response) (*CreateTableResponse, error) 
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7139,7 +7781,6 @@ func ParseCreateTableResponse(rsp *http.Response) (*CreateTableResponse, error) 
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7150,7 +7791,6 @@ func ParseCreateTableResponse(rsp *http.Response) (*CreateTableResponse, error) 
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7189,7 +7829,6 @@ func ParseBulkInsertTableRecordsResponse(rsp *http.Response) (*BulkInsertTableRe
 		var dest struct {
 			Errors []struct {
 				Message *string `json:"message,omitempty"`
-				Status  int     `json:"status"`
 			} `json:"errors"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -7201,7 +7840,6 @@ func ParseBulkInsertTableRecordsResponse(rsp *http.Response) (*BulkInsertTableRe
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7212,7 +7850,6 @@ func ParseBulkInsertTableRecordsResponse(rsp *http.Response) (*BulkInsertTableRe
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7251,7 +7888,6 @@ func ParseGetTableColumnsResponse(rsp *http.Response) (*GetTableColumnsResponse,
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7262,7 +7898,6 @@ func ParseGetTableColumnsResponse(rsp *http.Response) (*GetTableColumnsResponse,
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7273,7 +7908,6 @@ func ParseGetTableColumnsResponse(rsp *http.Response) (*GetTableColumnsResponse,
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7312,7 +7946,6 @@ func ParseAddTableColumnResponse(rsp *http.Response) (*AddTableColumnResponse, e
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7323,7 +7956,6 @@ func ParseAddTableColumnResponse(rsp *http.Response) (*AddTableColumnResponse, e
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7334,7 +7966,6 @@ func ParseAddTableColumnResponse(rsp *http.Response) (*AddTableColumnResponse, e
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7373,7 +8004,6 @@ func ParseDeleteColumnResponse(rsp *http.Response) (*DeleteColumnResponse, error
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7384,7 +8014,6 @@ func ParseDeleteColumnResponse(rsp *http.Response) (*DeleteColumnResponse, error
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7395,7 +8024,6 @@ func ParseDeleteColumnResponse(rsp *http.Response) (*DeleteColumnResponse, error
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7432,7 +8060,6 @@ func ParseGetColumnResponse(rsp *http.Response) (*GetColumnResponse, error) {
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7443,7 +8070,6 @@ func ParseGetColumnResponse(rsp *http.Response) (*GetColumnResponse, error) {
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7454,7 +8080,6 @@ func ParseGetColumnResponse(rsp *http.Response) (*GetColumnResponse, error) {
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7493,7 +8118,6 @@ func ParseUpdateColumnResponse(rsp *http.Response) (*UpdateColumnResponse, error
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7504,7 +8128,6 @@ func ParseUpdateColumnResponse(rsp *http.Response) (*UpdateColumnResponse, error
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7515,7 +8138,6 @@ func ParseUpdateColumnResponse(rsp *http.Response) (*UpdateColumnResponse, error
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7557,7 +8179,6 @@ func ParseInsertRecordResponse(rsp *http.Response) (*InsertRecordResponse, error
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7568,7 +8189,6 @@ func ParseInsertRecordResponse(rsp *http.Response) (*InsertRecordResponse, error
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7579,7 +8199,6 @@ func ParseInsertRecordResponse(rsp *http.Response) (*InsertRecordResponse, error
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7609,7 +8228,6 @@ func ParseDeleteRecordResponse(rsp *http.Response) (*DeleteRecordResponse, error
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7620,7 +8238,6 @@ func ParseDeleteRecordResponse(rsp *http.Response) (*DeleteRecordResponse, error
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7631,7 +8248,6 @@ func ParseDeleteRecordResponse(rsp *http.Response) (*DeleteRecordResponse, error
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7668,7 +8284,6 @@ func ParseGetRecordResponse(rsp *http.Response) (*GetRecordResponse, error) {
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7679,7 +8294,6 @@ func ParseGetRecordResponse(rsp *http.Response) (*GetRecordResponse, error) {
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7690,12 +8304,153 @@ func ParseGetRecordResponse(rsp *http.Response) (*GetRecordResponse, error) {
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateRecordWithIDResponse parses an HTTP response from a UpdateRecordWithIDWithResponse call
+func ParseUpdateRecordWithIDResponse(rsp *http.Response) (*UpdateRecordWithIDResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateRecordWithIDResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Id   string `json:"id"`
+			Xata struct {
+				Version int `json:"version"`
+			} `json:"xata"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpsertRecordWithIDResponse parses an HTTP response from a UpsertRecordWithIDWithResponse call
+func ParseUpsertRecordWithIDResponse(rsp *http.Response) (*UpsertRecordWithIDResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpsertRecordWithIDResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Id   string `json:"id"`
+			Xata struct {
+				Version int `json:"version"`
+			} `json:"xata"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 422:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON422 = &dest
 
 	}
 
@@ -7732,7 +8487,6 @@ func ParseInsertRecordWithIDResponse(rsp *http.Response) (*InsertRecordWithIDRes
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7743,7 +8497,6 @@ func ParseInsertRecordWithIDResponse(rsp *http.Response) (*InsertRecordWithIDRes
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7754,7 +8507,6 @@ func ParseInsertRecordWithIDResponse(rsp *http.Response) (*InsertRecordWithIDRes
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7765,7 +8517,6 @@ func ParseInsertRecordWithIDResponse(rsp *http.Response) (*InsertRecordWithIDRes
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7806,7 +8557,6 @@ func ParseQueryTableResponse(rsp *http.Response) (*QueryTableResponse, error) {
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7817,7 +8567,6 @@ func ParseQueryTableResponse(rsp *http.Response) (*QueryTableResponse, error) {
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7828,7 +8577,6 @@ func ParseQueryTableResponse(rsp *http.Response) (*QueryTableResponse, error) {
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7867,7 +8615,6 @@ func ParseGetTableSchemaResponse(rsp *http.Response) (*GetTableSchemaResponse, e
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7878,7 +8625,6 @@ func ParseGetTableSchemaResponse(rsp *http.Response) (*GetTableSchemaResponse, e
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7889,7 +8635,6 @@ func ParseGetTableSchemaResponse(rsp *http.Response) (*GetTableSchemaResponse, e
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7919,7 +8664,6 @@ func ParseSetTableSchemaResponse(rsp *http.Response) (*SetTableSchemaResponse, e
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7930,7 +8674,6 @@ func ParseSetTableSchemaResponse(rsp *http.Response) (*SetTableSchemaResponse, e
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7941,7 +8684,6 @@ func ParseSetTableSchemaResponse(rsp *http.Response) (*SetTableSchemaResponse, e
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7952,7 +8694,6 @@ func ParseSetTableSchemaResponse(rsp *http.Response) (*SetTableSchemaResponse, e
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -7989,7 +8730,6 @@ func ParseGetDatabaseListResponse(rsp *http.Response) (*GetDatabaseListResponse,
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8000,7 +8740,6 @@ func ParseGetDatabaseListResponse(rsp *http.Response) (*GetDatabaseListResponse,
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8030,7 +8769,6 @@ func ParseDeleteDatabaseResponse(rsp *http.Response) (*DeleteDatabaseResponse, e
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8041,7 +8779,6 @@ func ParseDeleteDatabaseResponse(rsp *http.Response) (*DeleteDatabaseResponse, e
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8052,7 +8789,6 @@ func ParseDeleteDatabaseResponse(rsp *http.Response) (*DeleteDatabaseResponse, e
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8089,7 +8825,6 @@ func ParseGetBranchListResponse(rsp *http.Response) (*GetBranchListResponse, err
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8100,7 +8835,6 @@ func ParseGetBranchListResponse(rsp *http.Response) (*GetBranchListResponse, err
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8111,7 +8845,6 @@ func ParseGetBranchListResponse(rsp *http.Response) (*GetBranchListResponse, err
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8151,7 +8884,6 @@ func ParseCreateDatabaseResponse(rsp *http.Response) (*CreateDatabaseResponse, e
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8162,7 +8894,6 @@ func ParseCreateDatabaseResponse(rsp *http.Response) (*CreateDatabaseResponse, e
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8192,7 +8923,6 @@ func ParseDeleteUserResponse(rsp *http.Response) (*DeleteUserResponse, error) {
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8203,7 +8933,6 @@ func ParseDeleteUserResponse(rsp *http.Response) (*DeleteUserResponse, error) {
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8214,7 +8943,6 @@ func ParseDeleteUserResponse(rsp *http.Response) (*DeleteUserResponse, error) {
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8251,7 +8979,6 @@ func ParseGetUserResponse(rsp *http.Response) (*GetUserResponse, error) {
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8262,7 +8989,6 @@ func ParseGetUserResponse(rsp *http.Response) (*GetUserResponse, error) {
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8273,7 +8999,6 @@ func ParseGetUserResponse(rsp *http.Response) (*GetUserResponse, error) {
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8310,7 +9035,6 @@ func ParseUpdateUserResponse(rsp *http.Response) (*UpdateUserResponse, error) {
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8321,7 +9045,6 @@ func ParseUpdateUserResponse(rsp *http.Response) (*UpdateUserResponse, error) {
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8332,7 +9055,6 @@ func ParseUpdateUserResponse(rsp *http.Response) (*UpdateUserResponse, error) {
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8374,7 +9096,6 @@ func ParseGetUserAPIKeysResponse(rsp *http.Response) (*GetUserAPIKeysResponse, e
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8385,7 +9106,6 @@ func ParseGetUserAPIKeysResponse(rsp *http.Response) (*GetUserAPIKeysResponse, e
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8396,7 +9116,6 @@ func ParseGetUserAPIKeysResponse(rsp *http.Response) (*GetUserAPIKeysResponse, e
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8426,7 +9145,6 @@ func ParseDeleteUserAPIKeyResponse(rsp *http.Response) (*DeleteUserAPIKeyRespons
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8437,7 +9155,6 @@ func ParseDeleteUserAPIKeyResponse(rsp *http.Response) (*DeleteUserAPIKeyRespons
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8448,7 +9165,6 @@ func ParseDeleteUserAPIKeyResponse(rsp *http.Response) (*DeleteUserAPIKeyRespons
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8489,7 +9205,6 @@ func ParseCreateUserAPIKeyResponse(rsp *http.Response) (*CreateUserAPIKeyRespons
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8500,7 +9215,6 @@ func ParseCreateUserAPIKeyResponse(rsp *http.Response) (*CreateUserAPIKeyRespons
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8511,7 +9225,6 @@ func ParseCreateUserAPIKeyResponse(rsp *http.Response) (*CreateUserAPIKeyRespons
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8555,7 +9268,6 @@ func ParseGetWorkspacesListResponse(rsp *http.Response) (*GetWorkspacesListRespo
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8566,7 +9278,6 @@ func ParseGetWorkspacesListResponse(rsp *http.Response) (*GetWorkspacesListRespo
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8577,7 +9288,6 @@ func ParseGetWorkspacesListResponse(rsp *http.Response) (*GetWorkspacesListRespo
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8614,7 +9324,6 @@ func ParseCreateWorkspaceResponse(rsp *http.Response) (*CreateWorkspaceResponse,
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8625,7 +9334,6 @@ func ParseCreateWorkspaceResponse(rsp *http.Response) (*CreateWorkspaceResponse,
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8636,7 +9344,6 @@ func ParseCreateWorkspaceResponse(rsp *http.Response) (*CreateWorkspaceResponse,
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8666,7 +9373,6 @@ func ParseDeleteWorkspaceResponse(rsp *http.Response) (*DeleteWorkspaceResponse,
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8677,7 +9383,6 @@ func ParseDeleteWorkspaceResponse(rsp *http.Response) (*DeleteWorkspaceResponse,
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8688,7 +9393,6 @@ func ParseDeleteWorkspaceResponse(rsp *http.Response) (*DeleteWorkspaceResponse,
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8725,7 +9429,6 @@ func ParseGetWorkspaceResponse(rsp *http.Response) (*GetWorkspaceResponse, error
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8736,7 +9439,6 @@ func ParseGetWorkspaceResponse(rsp *http.Response) (*GetWorkspaceResponse, error
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8747,7 +9449,6 @@ func ParseGetWorkspaceResponse(rsp *http.Response) (*GetWorkspaceResponse, error
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8784,7 +9485,6 @@ func ParseUpdateWorkspaceResponse(rsp *http.Response) (*UpdateWorkspaceResponse,
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8795,7 +9495,6 @@ func ParseUpdateWorkspaceResponse(rsp *http.Response) (*UpdateWorkspaceResponse,
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8806,7 +9505,6 @@ func ParseUpdateWorkspaceResponse(rsp *http.Response) (*UpdateWorkspaceResponse,
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8843,7 +9541,6 @@ func ParseInviteWorkspaceMemberResponse(rsp *http.Response) (*InviteWorkspaceMem
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8854,7 +9551,6 @@ func ParseInviteWorkspaceMemberResponse(rsp *http.Response) (*InviteWorkspaceMem
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8865,7 +9561,104 @@ func ParseInviteWorkspaceMemberResponse(rsp *http.Response) (*InviteWorkspaceMem
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCancelWorkspaceMemberInviteResponse parses an HTTP response from a CancelWorkspaceMemberInviteWithResponse call
+func ParseCancelWorkspaceMemberInviteResponse(rsp *http.Response) (*CancelWorkspaceMemberInviteResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CancelWorkspaceMemberInviteResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseResendWorkspaceMemberInviteResponse parses an HTTP response from a ResendWorkspaceMemberInviteWithResponse call
+func ParseResendWorkspaceMemberInviteResponse(rsp *http.Response) (*ResendWorkspaceMemberInviteResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ResendWorkspaceMemberInviteResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest struct {
+			Id      *string `json:"id,omitempty"`
+			Message string  `json:"message"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8895,7 +9688,6 @@ func ParseAcceptWorkspaceMemberInviteResponse(rsp *http.Response) (*AcceptWorksp
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8906,7 +9698,6 @@ func ParseAcceptWorkspaceMemberInviteResponse(rsp *http.Response) (*AcceptWorksp
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8917,7 +9708,6 @@ func ParseAcceptWorkspaceMemberInviteResponse(rsp *http.Response) (*AcceptWorksp
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8954,7 +9744,6 @@ func ParseGetWorkspaceMembersListResponse(rsp *http.Response) (*GetWorkspaceMemb
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8965,7 +9754,6 @@ func ParseGetWorkspaceMembersListResponse(rsp *http.Response) (*GetWorkspaceMemb
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8976,7 +9764,6 @@ func ParseGetWorkspaceMembersListResponse(rsp *http.Response) (*GetWorkspaceMemb
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -9006,7 +9793,6 @@ func ParseRemoveWorkspaceMemberResponse(rsp *http.Response) (*RemoveWorkspaceMem
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -9017,7 +9803,6 @@ func ParseRemoveWorkspaceMemberResponse(rsp *http.Response) (*RemoveWorkspaceMem
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -9028,7 +9813,6 @@ func ParseRemoveWorkspaceMemberResponse(rsp *http.Response) (*RemoveWorkspaceMem
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -9058,7 +9842,6 @@ func ParseUpdateWorkspaceMemberRoleResponse(rsp *http.Response) (*UpdateWorkspac
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -9069,7 +9852,6 @@ func ParseUpdateWorkspaceMemberRoleResponse(rsp *http.Response) (*UpdateWorkspac
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -9080,7 +9862,6 @@ func ParseUpdateWorkspaceMemberRoleResponse(rsp *http.Response) (*UpdateWorkspac
 		var dest struct {
 			Id      *string `json:"id,omitempty"`
 			Message string  `json:"message"`
-			Status  int     `json:"status"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err

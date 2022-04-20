@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
 	"time"
 
@@ -36,6 +37,8 @@ func generateRandomDoc(columns []spec.Column) *map[string]interface{} {
 			doc[column.Name] = (rand.Intn(2) == 1)
 		case spec.ColumnTypeInt:
 			doc[column.Name] = rand.Intn(100)
+		case spec.ColumnTypeFloat:
+			doc[column.Name] = math.Floor(rand.Float64()*100) / 100
 		case spec.ColumnTypeObject:
 			doc[column.Name] = generateRandomDoc(column.Columns)
 		case spec.ColumnTypeEmail:

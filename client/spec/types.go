@@ -37,6 +37,7 @@ type Column struct {
 	Multiple *ColumnMultiple `json:"multiple,omitempty" yaml:"multiple,omitempty"`
 	Link     *ColumnLink     `json:"link,omitempty" yaml:"link,omitempty"`
 	Int      *ColumnInt      `json:"int,omitempty" yaml:"int,omitempty"`
+	Float    *ColumnInt      `json:"float,omitempty" yaml:"float,omitempty"`
 
 	Required bool `json:"required,omitempty" yaml:"required,omitempty"`
 	Unique   bool `json:"unique,omitempty" yaml:"unique,omitempty"`
@@ -64,7 +65,7 @@ type ColumnText struct {
 type ColumnBool struct {
 }
 
-// ColumnObject contains settings for the bool type.
+// ColumnObject contains settings for the object type.
 type ColumnObject struct {
 	Columns map[string]Column `dynamodbav:"columns,omitempty" json:"columns,omitempty" yaml:"columns,omitempty" validate:"required,dive"`
 }
@@ -86,8 +87,12 @@ type ColumnLink struct {
 	LookupColumns map[string]Column `dynamodbav:"lookupColumns,omitempty" json:"-" yaml:"-"`
 }
 
-// ColumnInt contains settings for the bool type.
+// ColumnInt contains settings for the int type.
 type ColumnInt struct {
+}
+
+// ColumnFloat contains settings for the float type.
+type ColumnFloat struct {
 }
 
 // ColumnType is an enum for the available column types.
@@ -110,6 +115,8 @@ const (
 	ColumnTypeLink
 	// ColumnTypeInt is a long integer
 	ColumnTypeInt
+	// ColumnTypeFloat is a double precision float
+	ColumnTypeFloat
 )
 
 func ColumnTypeFromString(s string) ColumnType {
@@ -122,6 +129,7 @@ func ColumnTypeFromString(s string) ColumnType {
 		"text":     ColumnTypeText,
 		"link":     ColumnTypeLink,
 		"int":      ColumnTypeInt,
+		"float":    ColumnTypeFloat,
 	}
 	return toID[s]
 }
@@ -136,6 +144,7 @@ func (ct ColumnType) String() string {
 		ColumnTypeText:     "text",
 		ColumnTypeLink:     "link",
 		ColumnTypeInt:      "int",
+		ColumnTypeFloat:    "float",
 	}
 	return toString[ct]
 }

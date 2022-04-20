@@ -2,4 +2,4 @@
 
 package spec
 
-var APIRevision = "a0bb4b3a8b69a5a50fd21e6aa79672660f76c6b0"
+var APIRevision = "2965fe786632c4b9554f29f598dce7856e9335b6"
