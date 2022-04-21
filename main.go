@@ -16,11 +16,6 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-func printVersion(c *cli.Context) error {
-	fmt.Printf("%s %s\n", c.App.Name, buildvar.Version)
-	return nil
-}
-
 func browse(c *cli.Context) error {
 	dir := c.String("dir")
 
@@ -81,8 +76,9 @@ func main() {
 	rand.Seed(int64(new(maphash.Hash).Sum64()))
 
 	app := &cli.App{
-		Name:  "Xata CLI",
-		Usage: "Command Line Interface for the xata.io serverless database service.",
+		Name:    "Xata CLI",
+		Usage:   "Command Line Interface for the xata.io serverless database service.",
+		Version: buildvar.Version,
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:    "dir",
@@ -218,11 +214,6 @@ func main() {
 						Usage:   "Table in which to add data (default: all). Can be specified multiple times.",
 					},
 				},
-			},
-			{
-				Name:   "version",
-				Usage:  "Build information",
-				Action: printVersion,
 			},
 			{
 				Name:   "browse",
