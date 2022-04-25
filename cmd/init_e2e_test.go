@@ -49,6 +49,12 @@ func TestInit(t *testing.T) {
 				_, err = c.SendLine("test")
 				require.NoError(t, err)
 
+				_, err = c.ExpectString("Do you want to install the TypeScript SDK and code generator?")
+				require.NoError(t, err)
+
+				_, err = c.SendLine("n")
+				require.NoError(t, err)
+
 				_, err = c.ExpectString("Init done. Edit xata/schema.json to get started.")
 				require.NoError(t, err)
 			},
@@ -93,6 +99,36 @@ func TestInit(t *testing.T) {
 				_, err = c.ExpectString("Pulling database schema...")
 				require.NoError(t, err)
 
+				_, err = c.ExpectString("Do you want to install the TypeScript SDK and code generator?")
+				require.NoError(t, err)
+
+				_, err = c.SendLine("n")
+				require.NoError(t, err)
+
+				_, err = c.ExpectString("Init done. Edit xata/schema.json to get started.")
+				require.NoError(t, err)
+			},
+			exitCode: 0,
+		},
+		{
+			name: "install codegen",
+			args: []string{"init", "--workspaceid", workspaceID, "-f"},
+			procedure: func(t *testing.T, c *expect.Console) {
+				_, err := c.ExpectString("Do you want to pull from an existing database?")
+				require.NoError(t, err)
+
+				_, err = c.SendLine("test")
+				require.NoError(t, err)
+
+				_, err = c.ExpectString("Pulling database schema...")
+				require.NoError(t, err)
+
+				_, err = c.ExpectString("Do you want to install the TypeScript SDK and code generator?")
+				require.NoError(t, err)
+
+				_, err = c.SendLine("y")
+				require.NoError(t, err)
+
 				_, err = c.ExpectString("Init done. Edit xata/schema.json to get started.")
 				require.NoError(t, err)
 			},
@@ -122,6 +158,12 @@ func runInitCommand(t *testing.T, config TestConfig, configDir string, workspace
 	require.NoError(t, err)
 
 	_, err = c.SendLine(dbName)
+	require.NoError(t, err)
+
+	_, err = c.ExpectString("Do you want to install the TypeScript SDK and code generator?")
+	require.NoError(t, err)
+
+	_, err = c.SendLine("n")
 	require.NoError(t, err)
 
 	_, err = c.ExpectString("Init done. Edit xata/schema.json to get started.")
@@ -171,6 +213,12 @@ func TestInitYAML(t *testing.T) {
 				require.NoError(t, err)
 
 				_, err = c.SendLine("test")
+				require.NoError(t, err)
+
+				_, err = c.ExpectString("Do you want to install the TypeScript SDK and code generator?")
+				require.NoError(t, err)
+
+				_, err = c.SendLine("n")
 				require.NoError(t, err)
 
 				_, err = c.ExpectString("Init done. Edit xata/schema.yaml to get started.")
@@ -323,6 +371,12 @@ func TestInitDifferentBranch(t *testing.T) {
 	require.NoError(t, err)
 
 	_, err = c.ExpectString("Pulled schema written to xata/schema.json")
+	require.NoError(t, err)
+
+	_, err = c.ExpectString("Do you want to install the TypeScript SDK and code generator?")
+	require.NoError(t, err)
+
+	_, err = c.SendLine("n")
 	require.NoError(t, err)
 
 	_, err = c.ExpectString("Init done. Edit xata/schema.json to get started.")

@@ -167,6 +167,16 @@ func InitCommand(c *cli.Context) error {
 		}
 	}
 
+	err = InstallCodegen(dir)
+	if err != nil {
+		return err
+	}
+
+	err = RunHook(dir, "build")
+	if err != nil {
+		return err
+	}
+
 	fmt.Printf("Init done. Edit %s to get started.\n", schemaFile)
 
 	return nil

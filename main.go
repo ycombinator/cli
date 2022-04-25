@@ -33,6 +33,16 @@ func browse(c *cli.Context) error {
 	return nil
 }
 
+func build(c *cli.Context) error {
+	dir := c.String("dir")
+
+	err := cmd.RunHook(dir, "build")
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func getSchemaStatus(c *cli.Context) error {
 	dir := c.String("dir")
 
@@ -214,6 +224,11 @@ func main() {
 						Usage:   "Table in which to add data (default: all). Can be specified multiple times.",
 					},
 				},
+			},
+			{
+				Name:   "build",
+				Usage:  "Runs the build hook",
+				Action: build,
 			},
 			{
 				Name:   "browse",

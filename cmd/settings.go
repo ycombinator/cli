@@ -20,9 +20,10 @@ const (
 )
 
 type SettingsFile struct {
-	SchemaFileFormat string `json:"schemaFileFormat"`
-	DBName           string `json:"dbName"`
-	WorkspaceID      string `json:"workspaceID"`
+	SchemaFileFormat string            `json:"schemaFileFormat"`
+	DBName           string            `json:"dbName"`
+	WorkspaceID      string            `json:"workspaceID"`
+	Hooks            map[string]string `json:"hooks"`
 }
 
 func writeSettings(dir string, settings SettingsFile) error {

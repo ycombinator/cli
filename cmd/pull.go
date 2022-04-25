@@ -122,6 +122,12 @@ func PullCommand(c *cli.Context) error {
 	if err != nil {
 		return fmt.Errorf("writing file: %w", err)
 	}
+
+	err = RunHook(dir, "build")
+	if err != nil {
+		return err
+	}
+
 	fmt.Printf("Pulled schema written to %s\n", schemaFile)
 	return nil
 }
