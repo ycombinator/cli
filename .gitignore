@@ -12,6 +12,5 @@ dist/
 .env
 
 dist/
-
-.envrc
 .idea/
+.envrc

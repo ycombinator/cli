@@ -45,8 +45,22 @@ func listDBs(c *cli.Context) error {
 		return err
 	}
 
-	resp, err := client.GetDatabaseList(c.Context)
-	return printResponse(c, resp, err)
+	cr := spec.ClientWithResponses{ClientInterface: client}
+	resp, err := cr.GetDatabaseListWithResponse(c.Context)
+	return printResponse(c, resp, resp.Body, err, func() error {
+		data := resp.JSON200
+		if data == nil {
+			return fmt.Errorf("Unexpected server response %s", resp.Status())
+		}
+		arr := *data.Databases
+		table := make([][]interface{}, len(arr))
+		for i := 0; i < len(arr); i++ {
+			database := arr[i]
+			table[i] = []interface{}{database.Name, database.CreatedAt, database.NumberOfBranches}
+		}
+		printTable([]string{"Database name", "Created at", "Number of branches"}, table)
+		return nil
+	})
 }
 
 func createDB(c *cli.Context) error {
@@ -72,9 +86,13 @@ func createDB(c *cli.Context) error {
 		return err
 	}
 
-	resp, err := client.CreateDatabase(c.Context, spec.DBNameParam(dbName),
+	cr := spec.ClientWithResponses{ClientInterface: client}
+	resp, err := cr.CreateDatabaseWithResponse(c.Context, spec.DBNameParam(dbName),
 		spec.CreateDatabaseJSONRequestBody{})
-	return printResponse(c, resp, err)
+	return printResponse(c, resp, resp.Body, err, func() error {
+		fmt.Println("Database successfully created")
+		return nil
+	})
 }
 
 func deleteDB(c *cli.Context) error {
@@ -100,6 +118,10 @@ func deleteDB(c *cli.Context) error {
 		return err
 	}
 
-	resp, err := client.DeleteDatabase(c.Context, spec.DBNameParam(dbName))
-	return printResponse(c, resp, err)
+	cr := spec.ClientWithResponses{ClientInterface: client}
+	resp, err := cr.DeleteDatabaseWithResponse(c.Context, spec.DBNameParam(dbName))
+	return printResponse(c, resp, resp.Body, err, func() error {
+		fmt.Println("Database successfully deleted")
+		return nil
+	})
 }

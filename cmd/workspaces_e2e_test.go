@@ -10,7 +10,7 @@ import (
 )
 
 func createWorkspaceCommand(t *testing.T, config *TestConfig, configDir, name string) string {
-	c, cmd := startCommand(t, configDir, config.TestBinaryPath, "--nocolor", "workspaces", "create", name)
+	c, cmd := startCommand(t, configDir, config.TestBinaryPath, "--json", "--nocolor", "workspaces", "create", name)
 	defer c.Close()
 
 	output, err := c.ExpectString("}")

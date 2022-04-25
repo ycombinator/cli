@@ -52,8 +52,22 @@ func listBranches(c *cli.Context) error {
 		return err
 	}
 
-	resp, err := client.GetBranchList(c.Context, spec.DBNameParam(dbName))
-	return printResponse(c, resp, err)
+	cr := spec.ClientWithResponses{ClientInterface: client}
+	resp, err := cr.GetBranchListWithResponse(c.Context, spec.DBNameParam(dbName))
+	return printResponse(c, resp, resp.Body, err, func() error {
+		data := resp.JSON200
+		if data == nil {
+			return fmt.Errorf("Unexpected server response %s", resp.Status())
+		}
+
+		table := make([][]interface{}, len(data.Branches))
+		for i := 0; i < len(data.Branches); i++ {
+			branch := data.Branches[i]
+			table[i] = []interface{}{branch.Name, branch.CreatedAt}
+		}
+		printTable([]string{"Branch name", "Created at"}, table)
+		return nil
+	})
 }
 
 func createBranch(c *cli.Context) error {
@@ -106,11 +120,16 @@ func createBranch(c *cli.Context) error {
 	}
 
 	dbBranchName := spec.DBBranchNameParam(fmt.Sprintf("%s:%s", dbName, branchName))
-	resp, err := client.CreateBranch(c.Context, dbBranchName,
+
+	cr := spec.ClientWithResponses{ClientInterface: client}
+	resp, err := cr.CreateBranchWithResponse(c.Context, dbBranchName,
 		&spec.CreateBranchParams{
 			From: &fromBranch,
 		}, spec.CreateBranchJSONRequestBody{})
-	return printResponse(c, resp, err)
+	return printResponse(c, resp, resp.Body, err, func() error {
+		fmt.Println("Branch successfully created")
+		return nil
+	})
 }
 
 func deleteBranch(c *cli.Context) error {
@@ -142,8 +161,13 @@ func deleteBranch(c *cli.Context) error {
 	}
 
 	dbBranchName := spec.DBBranchNameParam(fmt.Sprintf("%s:%s", dbName, branchName))
-	resp, err := client.DeleteBranch(c.Context, dbBranchName)
-	return printResponse(c, resp, err)
+
+	cr := spec.ClientWithResponses{ClientInterface: client}
+	resp, err := cr.DeleteBranchWithResponse(c.Context, dbBranchName)
+	return printResponse(c, resp, resp.Body, err, func() error {
+		fmt.Println("Branch successfully deleted")
+		return nil
+	})
 }
 
 func getBranches(c *cli.Context, client *spec.Client, dbName string) ([]string, error) {

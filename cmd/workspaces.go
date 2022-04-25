@@ -41,8 +41,21 @@ func listWorkspaces(c *cli.Context) error {
 		return err
 	}
 
-	resp, err := client.GetWorkspacesList(c.Context)
-	return printResponse(c, resp, err)
+	cr := spec.ClientWithResponses{ClientInterface: client}
+	resp, err := cr.GetWorkspacesListWithResponse(c.Context)
+	return printResponse(c, resp, resp.Body, err, func() error {
+		data := resp.JSON200
+		if data == nil {
+			return fmt.Errorf("Unexpected server response %s", resp.Status())
+		}
+		table := make([][]interface{}, len(data.Workspaces))
+		for i := 0; i < len(data.Workspaces); i++ {
+			workspace := data.Workspaces[i]
+			table[i] = []interface{}{workspace.Name, workspace.Id, workspace.Role}
+		}
+		printTable([]string{"Workspace name", "Id", "Role"}, table)
+		return nil
+	})
 }
 
 func createWorkspace(c *cli.Context) error {
@@ -60,11 +73,15 @@ func createWorkspace(c *cli.Context) error {
 		return err
 	}
 
-	resp, err := client.CreateWorkspace(c.Context, spec.CreateWorkspaceJSONRequestBody{
+	cr := spec.ClientWithResponses{ClientInterface: client}
+	resp, err := cr.CreateWorkspaceWithResponse(c.Context, spec.CreateWorkspaceJSONRequestBody{
 		Name: workspaceName,
 		Slug: slug.Make(workspaceName),
 	})
-	return printResponse(c, resp, err)
+	return printResponse(c, resp, resp.Body, err, func() error {
+		fmt.Println("Workspace successfully created")
+		return nil
+	})
 }
 
 func deleteWorkspace(c *cli.Context) error {
@@ -81,6 +98,10 @@ func deleteWorkspace(c *cli.Context) error {
 		return err
 	}
 
-	resp, err := client.DeleteWorkspace(c.Context, spec.WorkspaceIDParam(workspaceID))
-	return printResponse(c, resp, err)
+	cr := spec.ClientWithResponses{ClientInterface: client}
+	resp, err := cr.DeleteWorkspaceWithResponse(c.Context, spec.WorkspaceIDParam(workspaceID))
+	return printResponse(c, resp, resp.Body, err, func() error {
+		fmt.Println("Workspace successfully deleted")
+		return nil
+	})
 }

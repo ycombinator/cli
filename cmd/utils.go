@@ -5,21 +5,22 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
 	"strings"
+	"text/tabwriter"
+	"time"
 
+	"github.com/tidwall/pretty"
 	"github.com/xataio/cli/client"
 	"github.com/xataio/cli/client/spec"
 	"github.com/xataio/cli/config"
 
 	"github.com/TylerBrock/colorjson"
 	"github.com/fatih/color"
-	"github.com/tidwall/pretty"
 	"github.com/urfave/cli/v2"
 )
 
@@ -161,52 +162,95 @@ func getMessage(bytes []byte) string {
 	return resp.Message
 }
 
-func printResponse(c *cli.Context, resp *http.Response, err error) error {
-	if err != nil {
-		return fmt.Errorf("Sending request: %s\n", err)
-	}
-	defer resp.Body.Close()
-	bodyBytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-	if resp.StatusCode > 299 {
-		if resp.StatusCode == http.StatusUnauthorized {
-			return ErrorUnauthorized{message: getMessage(bodyBytes)}
-		}
-		return fmt.Errorf("Error from server: status %d: %s", resp.StatusCode, getMessage(bodyBytes))
-	}
-
+func printJSON(c *cli.Context, bodyBytes []byte) error {
 	if len(bodyBytes) == 0 {
 		return nil
 	}
 
 	if c.Bool("nocolor") {
 		fmt.Println(string(pretty.Pretty(bodyBytes)))
-	} else {
-		var response map[string]interface{}
-		err = json.Unmarshal(bodyBytes, &response)
-		if err != nil {
-			fmt.Printf("%s\n", bodyBytes)
-			return err
-		}
-
-		colorer := colorjson.NewFormatter()
-		colorer.Indent = 2
-		if c.Bool("lightbg") {
-			colorer.KeyColor = color.New(color.FgGreen)
-			colorer.StringColor = color.New(color.FgBlack)
-		} else {
-			colorer.KeyColor = color.New(color.FgGreen)
-			colorer.StringColor = color.New(color.FgWhite)
-		}
-		s, err := colorer.Marshal(response)
-		if err != nil {
-			fmt.Printf("%s\n", bodyBytes)
-			return err
-		}
-
-		fmt.Println(string(s))
+		return nil
 	}
+
+	var response map[string]interface{}
+	err := json.Unmarshal(bodyBytes, &response)
+	if err != nil {
+		fmt.Printf("%s\n", bodyBytes)
+		return err
+	}
+
+	colorer := colorjson.NewFormatter()
+	colorer.Indent = 2
+	if c.Bool("lightbg") {
+		colorer.KeyColor = color.New(color.FgGreen)
+		colorer.StringColor = color.New(color.FgBlack)
+	} else {
+		colorer.KeyColor = color.New(color.FgGreen)
+		colorer.StringColor = color.New(color.FgWhite)
+	}
+	s, err := colorer.Marshal(response)
+	if err != nil {
+		fmt.Printf("%s\n", bodyBytes)
+		return err
+	}
+	fmt.Println(string(s))
 	return nil
+}
+
+type BasicResponse interface {
+	StatusCode() int
+	Status() string
+}
+
+func printResponse(c *cli.Context, resp BasicResponse, bodyBytes []byte, err error, printer func() error) error {
+	if err != nil {
+		return fmt.Errorf("Sending request: %s\n", err)
+	}
+	if resp.StatusCode()/100 != 2 {
+		if resp.StatusCode() == http.StatusUnauthorized {
+			return ErrorUnauthorized{message: getMessage(bodyBytes)}
+		}
+		return fmt.Errorf("%s: %s", resp.Status(), getMessage(bodyBytes))
+	}
+	if c.Bool("json") {
+		return printJSON(c, bodyBytes)
+	}
+	if printer == nil {
+		return nil
+	}
+	return printer()
+}
+
+func printTable(headers []string, table [][]interface{}) {
+	w := tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
+	tabHeaders := make([]interface{}, len(headers)*2-1)
+	for i := 0; i < len(headers); i++ {
+		tabHeaders[i*2] = headers[i]
+		if i > 0 {
+			tabHeaders[i*2-1] = "\t"
+		}
+	}
+	fmt.Fprintln(w, tabHeaders...)
+
+	for i := 0; i < len(table); i++ {
+		row := table[i]
+		tabRow := make([]interface{}, len(row)*2-1)
+		for n := 0; n < len(row); n++ {
+			tabRow[n*2] = printableValue(row[n])
+			if n > 0 {
+				tabRow[n*2-1] = "\t"
+			}
+		}
+		fmt.Fprintln(w, tabRow...)
+	}
+	w.Flush()
+}
+
+func printableValue(value interface{}) interface{} {
+	switch v := value.(type) {
+	case spec.DateTime:
+		return time.Time(v).UTC().String()
+	default:
+		return value
+	}
 }

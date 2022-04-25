@@ -108,6 +108,10 @@ func main() {
 				Name:  config.ArgKey,
 				Usage: "Xata global config directory",
 			},
+			&cli.BoolFlag{
+				Name:  "json",
+				Usage: "Generate a JSON output",
+			},
 		},
 
 		Commands: []*cli.Command{
