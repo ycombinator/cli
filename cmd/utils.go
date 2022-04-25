@@ -51,7 +51,13 @@ func checkWorkspacesResponse(workspaces *spec.GetWorkspacesListResponse) error {
 	return nil
 }
 
-func getWorkspaces(c *cli.Context) ([]string, error) {
+type Workspace struct {
+	ID   spec.WorkspaceID `json:"id"`
+	Name string           `json:"name"`
+	Slug string           `json:"slug"`
+}
+
+func getWorkspaces(c *cli.Context) ([]Workspace, error) {
 	apiKey, err := config.APIKey(c)
 	if err != nil {
 		return nil, err
@@ -69,9 +75,9 @@ func getWorkspaces(c *cli.Context) ([]string, error) {
 		return nil, err
 	}
 
-	res := make([]string, 0, len(workspaces.JSON200.Workspaces))
+	res := make([]Workspace, 0, len(workspaces.JSON200.Workspaces))
 	for _, workspace := range workspaces.JSON200.Workspaces {
-		res = append(res, string(workspace.Id))
+		res = append(res, Workspace{workspace.Id, workspace.Name, workspace.Slug})
 	}
 	return res, nil
 }

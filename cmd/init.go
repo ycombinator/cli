@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/xataio/cli/client/spec"
 	"github.com/xataio/cli/filesystem"
@@ -52,15 +53,10 @@ func InitCommand(c *cli.Context) error {
 		case 0:
 			return errors.New("no workspaces found, please create one first")
 		case 1:
-			workspaceID = existingWorkspaces[0]
+			workspaceID = string(existingWorkspaces[0].ID)
 			fmt.Printf("You only have a workspace, using it by default: %s\n", workspaceID)
 		default:
-			prompt := &survey.Select{
-				Message: "Select the workspace for the database: ",
-				Options: existingWorkspaces,
-				Default: existingWorkspaces[0],
-			}
-			err = survey.AskOne(prompt, &workspaceID, nil)
+			workspaceID, err = promptForWorkspaceID(existingWorkspaces)
 			if err != nil {
 				return err
 			}
@@ -206,4 +202,37 @@ func stringInSlice(a string, list []string) bool {
 		}
 	}
 	return false
+}
+
+func promptForWorkspaceID(existingWorkspaces []Workspace) (string, error) {
+	options := make([]string, len(existingWorkspaces))
+
+	// Calculate max workspace name to print options in tabular format
+	maxNameLen := 0
+	for i := 0; i < len(existingWorkspaces); i++ {
+		nameLen := len(existingWorkspaces[i].Name)
+		if nameLen > maxNameLen {
+			maxNameLen = nameLen
+		}
+	}
+
+	// Calculate options showing the name and the id, with paddings of whitespaces to
+	// render them in tabular format
+	for i := 0; i < len(existingWorkspaces); i++ {
+		workspace := existingWorkspaces[i]
+		options[i] = fmt.Sprintf("%s  %s(%s)", workspace.Name, strings.Repeat(" ", maxNameLen-len(workspace.Name)), workspace.ID)
+	}
+
+	// Show the options to the user
+	prompt := &survey.Select{
+		Message: "Select the workspace for the database: ",
+		Options: options,
+		Default: existingWorkspaces[0],
+	}
+	result := -1
+	err := survey.AskOne(prompt, &result, nil)
+	if err != nil {
+		return "", err
+	}
+	return string(existingWorkspaces[result].ID), nil
 }
