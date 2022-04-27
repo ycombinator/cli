@@ -109,6 +109,10 @@ func main() {
 				Usage: "Xata global config directory",
 			},
 			&cli.BoolFlag{
+				Name:  "no-input",
+				Usage: "Disable interactivity",
+			},
+			&cli.BoolFlag{
 				Name:  "json",
 				Usage: "Generate a JSON output",
 			},
@@ -142,12 +146,23 @@ func main() {
 						Name:  "workspaceid",
 						Usage: "The id of the workspace to use.",
 					},
+					&cli.BoolFlag{
+						Name:  "ts-codegen",
+						Usage: "Install the TypeScript SDK and code generator.",
+					},
 				},
 			},
 			{
 				Name:   "deploy",
 				Usage:  "Deploy database to xata.io",
 				Action: cmd.DeployCommand,
+				Flags: []cli.Flag{
+					&cli.BoolFlag{
+						Name:    "force",
+						Aliases: []string{"f"},
+						Usage:   "Deploy without asking for confirmation.",
+					},
+				},
 			},
 			{
 				Name:   "pull",

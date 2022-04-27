@@ -22,6 +22,11 @@ import (
 const defaultBranchName = "main"
 
 func DeployCommand(c *cli.Context) error {
+	force := c.Bool("force")
+	if interactive, reason := isInteractiveWithReason(c); !force && !interactive {
+		return fmt.Errorf("The deploy command is interactive but %s. Use --force to deploy without asking for confirmation.", reason)
+	}
+
 	dir := c.String("dir")
 	schema, schemaFile, err := readSchemaFile(dir)
 	if err != nil {
@@ -86,6 +91,9 @@ func DeployCommand(c *cli.Context) error {
 			if !mainExists {
 				defaultFromBranch = existingBranches[0]
 			}
+			if !isInteractive(c) {
+				return fmt.Errorf("Database [%s] doesn't have a branch [%s]. Run this command in an interactive terminal, or create the branch first.", dbName, branch)
+			}
 			createBranch, fromBranch, useBranch := promptUserToAskForBranch(dbName, branch, defaultFromBranch, existingBranches)
 			if createBranch {
 				branchName := spec.BranchName(branch)
@@ -142,11 +150,13 @@ func DeployCommand(c *cli.Context) error {
 	fmt.Println()
 
 	var yes bool
-	prompt := &survey.Confirm{
-		Message: "Apply the above migration?",
-		Default: true,
+	if !force {
+		prompt := &survey.Confirm{
+			Message: "Apply the above migration?",
+			Default: true,
+		}
+		survey.AskOne(prompt, &yes)
 	}
-	survey.AskOne(prompt, &yes)
 
 	if yes {
 		sha, _ := GitGetLastSHA()

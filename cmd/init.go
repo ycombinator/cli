@@ -56,6 +56,9 @@ func InitCommand(c *cli.Context) error {
 			workspaceID = string(existingWorkspaces[0].ID)
 			fmt.Printf("You only have a workspace, using it by default: %s\n", workspaceID)
 		default:
+			if err := errorIfNotInteractive(c, "workspaceid"); err != nil {
+				return err
+			}
 			workspaceID, err = promptForWorkspaceID(existingWorkspaces)
 			if err != nil {
 				return err
@@ -66,6 +69,10 @@ func InitCommand(c *cli.Context) error {
 	dbname := c.String("dbname")
 	var pull bool
 	if dbname == "" {
+		if err := errorIfNotInteractive(c, "dbname"); err != nil {
+			return err
+		}
+
 		existingDBs, err := getDBs(c, workspaceID)
 		if err != nil {
 			return err
@@ -163,7 +170,7 @@ func InitCommand(c *cli.Context) error {
 		}
 	}
 
-	err = InstallCodegen(dir)
+	err = InstallCodegen(c, dir)
 	if err != nil {
 		return err
 	}

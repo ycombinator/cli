@@ -58,12 +58,17 @@ func PullCommand(c *cli.Context) error {
 	}
 	clientWithResponses := &spec.ClientWithResponses{ClientInterface: client}
 
-	dbbranch := spec.DBBranchNameParam(fmt.Sprintf("%s:%s", dbName, branch))
+	dbBranchName := fmt.Sprintf("%s:%s", dbName, branch)
+	dbbranch := spec.DBBranchNameParam(dbBranchName)
 	resp, err := clientWithResponses.GetBranchDetailsWithResponse(c.Context, dbbranch)
 	if err != nil {
 		return err
 	}
 	if resp.JSON404 != nil {
+		if err := errorIfNotInteractive(c, "a new branch name"); err != nil {
+			fmt.Println("Branch", dbBranchName, "doesn't exist anymore")
+			return err
+		}
 		difBranch, err := promptUserForADifferentBranch(c, client, dbName, branch)
 		if err != nil {
 			return err

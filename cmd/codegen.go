@@ -6,19 +6,25 @@ import (
 	"os/exec"
 
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/urfave/cli/v2"
 	"github.com/xataio/cli/filesystem"
 )
 
 const DirPerms = 0700
 
-func InstallCodegen(dir string) error {
-	prompt := &survey.Confirm{
-		Message: "Do you want to install the TypeScript SDK and code generator?",
-		Default: true,
-	}
-	var install bool
-	if err := survey.AskOne(prompt, &install); err != nil {
-		return err
+func InstallCodegen(c *cli.Context, dir string) error {
+	install := c.Bool("ts-codegen")
+	if !install {
+		if !isInteractive(c) {
+			return nil
+		}
+		prompt := &survey.Confirm{
+			Message: "Do you want to install the TypeScript SDK and code generator?",
+			Default: true,
+		}
+		if err := survey.AskOne(prompt, &install); err != nil {
+			return err
+		}
 	}
 
 	if !install {

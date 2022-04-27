@@ -14,6 +14,7 @@ import (
 	"text/tabwriter"
 	"time"
 
+	"github.com/mattn/go-isatty"
 	"github.com/tidwall/pretty"
 	"github.com/xataio/cli/client"
 	"github.com/xataio/cli/client/spec"
@@ -253,4 +254,27 @@ func printableValue(value interface{}) interface{} {
 	default:
 		return value
 	}
+}
+
+func isInteractiveWithReason(c *cli.Context) (bool, string) {
+	if c.Bool("no-input") {
+		return false, "--no-input is being used"
+	}
+	if !isatty.IsTerminal(os.Stdout.Fd()) && !isatty.IsCygwinTerminal(os.Stdout.Fd()) {
+		return false, "the current terminal is not interactive"
+	}
+	return true, ""
+}
+
+func isInteractive(c *cli.Context) bool {
+	interactive, _ := isInteractiveWithReason(c)
+	return interactive
+}
+
+func errorIfNotInteractive(c *cli.Context, variable string) error {
+	_, reason := isInteractiveWithReason(c)
+	if reason == "" {
+		return nil
+	}
+	return fmt.Errorf("In order to proceed a value for %s is required but a value was not passed as an argument and interactivity is disabbled because %s", variable, reason)
 }

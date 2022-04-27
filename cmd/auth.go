@@ -39,6 +39,9 @@ func login(c *cli.Context) error {
 	if config.APIKeyInEnv() {
 		return fmt.Errorf("Cannot configure auth if `%s` env var is present, it will be used instead", config.APIKeyEnv)
 	}
+	if interactive, reason := isInteractiveWithReason(c); !interactive {
+		return fmt.Errorf("The login command is interactive but %s", reason)
+	}
 
 	configured, err := config.LoggedIn(c)
 	if err != nil {
@@ -99,13 +102,15 @@ func logout(c *cli.Context) error {
 		fmt.Println("You are not logged in")
 	}
 
-	logout := false
-	prompt := &survey.Confirm{
-		Message: "Are you sure you want to logout of Xata?",
-	}
-	err = survey.AskOne(prompt, &logout)
-	if err != nil {
-		return err
+	logout := true
+	if isInteractive(c) {
+		prompt := &survey.Confirm{
+			Message: "Are you sure you want to logout of Xata?",
+		}
+		err = survey.AskOne(prompt, &logout)
+		if err != nil {
+			return err
+		}
 	}
 	if logout {
 		err = config.RemoveAPIKey(c)

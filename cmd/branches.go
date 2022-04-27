@@ -22,6 +22,12 @@ func GetBranchesSubcommands() []*cli.Command {
 			Name:   "create",
 			Usage:  "Create a branch",
 			Action: createBranch,
+			Flags: []cli.Flag{
+				&cli.StringFlag{
+					Name:  "from",
+					Usage: "The name of the from which to fork off to create the new branch.",
+				},
+			},
 		},
 		{
 			Name:   "delete",
@@ -104,18 +110,24 @@ func createBranch(c *cli.Context) error {
 		return err
 	}
 
-	var fromBranch string
-	if len(existingBranches) == 1 {
-		fromBranch = existingBranches[0]
-	} else {
-		prompt := &survey.Select{
-			Message: "From which branch should I fork the new branch?",
-			Options: existingBranches,
-			Default: defaultBranchName,
-		}
-		err = survey.AskOne(prompt, &fromBranch, nil)
-		if err != nil {
-			return err
+	fromBranch := c.String("from")
+	if fromBranch == "" {
+		if len(existingBranches) == 1 {
+			fromBranch = existingBranches[0]
+		} else {
+			if isInteractive(c) {
+				prompt := &survey.Select{
+					Message: "From which branch should I fork the new branch?",
+					Options: existingBranches,
+					Default: defaultBranchName,
+				}
+				err = survey.AskOne(prompt, &fromBranch, nil)
+				if err != nil {
+					return err
+				}
+			} else {
+				fromBranch = defaultBranchName
+			}
 		}
 	}
 
