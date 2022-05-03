@@ -77,7 +77,7 @@ func TestAuthLoginCommand(t *testing.T) {
 		{
 			name: "try an invalid API key",
 			procedure: func(t *testing.T, c *expect.Console) {
-				_, err = c.ExpectString("Introduce your API key:")
+				_, err = c.ExpectString("Enter your API key:")
 				require.NoError(t, err)
 				time.Sleep(1 * time.Second)
 				_, err = c.SendLine("invalid_key")
@@ -96,7 +96,7 @@ func TestAuthLoginCommand(t *testing.T) {
 		{
 			name: "login with valid API key",
 			procedure: func(t *testing.T, c *expect.Console) {
-				_, err = c.ExpectString("Introduce your API key:")
+				_, err = c.ExpectString("Enter your API key:")
 				require.NoError(t, err)
 				time.Sleep(1 * time.Second)
 				_, err = c.SendLine(config.TestKey)
@@ -120,7 +120,7 @@ func TestAuthLoginCommand(t *testing.T) {
 				_, err = c.SendLine("y")
 				require.NoError(t, err)
 
-				_, err = c.ExpectString("Introduce your API key:")
+				_, err = c.ExpectString("Enter your API key:")
 				require.NoError(t, err)
 				time.Sleep(1 * time.Second)
 				_, err = c.SendLine(config.TestKey)
@@ -219,7 +219,7 @@ func loginWithKeyCommand(t *testing.T, config *TestConfig, configDir string) {
 	c, cmd := startCommand(t, configDir, config.TestBinaryPath, "auth", "login")
 	defer c.Close()
 
-	_, err := c.ExpectString("Introduce your API key:")
+	_, err := c.ExpectString("Enter your API key:")
 	require.NoError(t, err)
 	time.Sleep(1 * time.Second)
 	_, err = c.SendLine(config.TestKey)

@@ -64,7 +64,7 @@ func login(c *cli.Context) error {
 
 	var apiKey string
 	prompt := &survey.Password{
-		Message: "Introduce your API key:",
+		Message: "Enter your API key:",
 		Help:    "You can generate a new API key at https://app.xata.io. You can learn more about API keys on our documentation site: https://docs.xata.io/concepts/api-keys",
 	}
 	err = survey.AskOne(prompt, &apiKey)
